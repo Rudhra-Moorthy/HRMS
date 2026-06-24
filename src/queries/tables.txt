@@ -1,0 +1,200 @@
+-- Roles
+CREATE TABLE roles (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(50) UNIQUE NOT NULL
+);
+INSERT INTO roles(name)
+VALUES('Admin'), ('HR Manager'), ('Employee');
+
+-- Permissions
+CREATE TABLE permissions (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- Role - permissions
+CREATE TABLE role_permissions (
+	role_id INT REFERENCES roles(id) ON DELETE CASCADE,
+	permission_id INT REFERENCES permissions(id) ON DELETE CASCADE,
+	PRIMARY KEY(role_id, permission_id)
+);
+
+--  users
+CREATE TABLE users (
+	id SERIAL PRIMARY KEY,
+	email VARCHAR(255) UNIQUE NOT NULL,
+	password VARCHAR(255) NOT NULL,
+	role_id INT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP,
+	deleted_at TIMESTAMP DEFAULT NULL,
+	CONSTRAINT fk_users FOREIGN KEY(role_id) REFERENCES roles(id) ON DELETE CASCADE
+);
+
+-- Refresh Tokens
+CREATE TABLE refresh_tokens (
+	id SERIAL PRIMARY KEY,
+	user_id INT REFERENCES users(id) ON DELETE CASCADE,
+	token TEXT NOT NULL,
+	expires_at TIMESTAMP NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- DEPARTMENT
+CREATE TABLE departments(
+	id BIGSERIAL PRIMARY KEY,
+	dept_name VARCHAR(100) UNIQUE NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT NULL,
+	deleted_at TIMESTAMP DEFAULT NULL
+);
+
+-- DESIGNATION
+CREATE TABLE designations(
+	id BIGSERIAL PRIMARY KEY,
+	designation_name VARCHAR(100) UNIQUE NOT NULL,
+	dept_id BIGINT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT NULL,
+	deleted_at TIMESTAMP DEFAULT NULL,
+	CONSTRAINT fk_dept FOREIGN KEY(dept_id) REFERENCES departments(id) ON DELETE CASCADE
+);
+
+-- Employee Table
+CREATE TABLE employees(
+	id BIGSERIAL PRIMARY KEY,
+	emp_code VARCHAR(20) NOT NULL,
+	user_id INT NOT NULL,
+	full_name VARCHAR(255) NOT NULL,
+	email VARCHAR(255) UNIQUE NOT NULL,
+	phone VARCHAR(15) UNIQUE NOT NULL,
+	dept_id BIGINT NOT NULL,
+	desg_id BIGINT NOT NULL,
+	date_of_joining DATE NOT NULL,
+	salary DECIMAL(15, 2) NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT NULL,
+	deleted_at TIMESTAMP DEFAULT NULL,
+	CONSTRAINT fk_dept FOREIGN KEY(dept_id) REFERENCES departments(id) ON DELETE CASCADE,
+	CONSTRAINT fk_desg FOREIGN KEY(desg_id) REFERENCES designations(id) ON DELETE CASCADE,
+	CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+);
+
+-- Employee Addresss
+CREATE TABLE employee_addresses(
+	id BIGSERIAL PRIMARY KEY,
+	emp_id BIGINT NOT NULL,
+	address_line_1 TEXT,
+	address_line_2 TEXT,
+	city VARCHAR(100) NOT NULL,
+	state VARCHAR(100) NOT NULL,
+	country VARCHAR(100) NOT NULL,
+	postal_code VARCHAR(10) NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT NULL,
+	CONSTRAINT fk_emp FOREIGN KEY(emp_id) REFERENCES employees(id) ON DELETE CASCADE
+);
+
+-- Employee Salary
+CREATE TABLE employee_salary_structures(
+	salary_id BIGSERIAL PRIMARY KEY,
+	employee_id BIGINT NOT NULL,
+	basic_pay NUMERIC(12, 2) DEFAULT 0,
+	hra NUMERIC(12, 2) DEFAULT 0,
+	medical NUMERIC(12, 2) DEFAULT 0,
+	conveyance NUMERIC(12, 2) DEFAULT 0,
+	special_allowances NUMERIC(12, 2) DEFAULT 0,
+	advance_bonus NUMERIC(12, 2) DEFAULT 0,
+	company_pf NUMERIC(12, 2) DEFAULT 0,
+	aplc NUMERIC(12, 2) DEFAULT 0,
+	provident_fund NUMERIC(12, 0) DEFAULT 0,
+	esi NUMERIC(12, 2) DEFAULT 0,
+	professional_tax NUMERIC(12, 2) DEFAULT 0,
+	gross_salary NUMERIC(12, 2),
+	total_deductions NUMERIC(12, 2),
+	net_take_home NUMERIC(12, 2),
+	total_ctc NUMERIC(12, 2),
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT fk_emp FOREIGN KEY(employee_id) REFERENCES employees(id)
+);
+
+-- Employee Assets
+CREATE TABLE employee_assets(
+	emp_asset_id BIGSERIAL PRIMARY KEY,
+	employee_id BIGINT NOT NULL,
+	asset_id BIGINT NOT NULL,
+	assigned_date DATE NOT NULL,
+	returned_date DATE,
+	remark TEXT DEFAULT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT fk_emp FOREIGN KEY(employee_id) REFERENCES employees(id),
+	CONSTRAINT fk_asset FOREIGN KEY(asset_id) REFERENCES company_assets(asset_id)
+);
+
+CREATE TYPE asset_status AS ENUM('Assigned', 'Available', 'Under Repair', 'Retired');
+CREATE TYPE asset_condition AS ENUM ('Good', 'Excellent', 'Damaged');
+
+-- Company assets 
+CREATE TABLE company_assets (
+	asset_id BIGSERIAL PRIMARY KEY,
+	asset_code VARCHAR(20) UNIQUE NOT NULL,
+	asset_name VARCHAR(100) NOT NULL,
+	assest_type VARCHAR(200) NOT NULL,
+	serial_number VARCHAR(100) UNIQUE NOT NULL,
+	purchase_date DATE NOT NULL,
+	status asset_status DEFAULT 'Assigned',
+	condition asset_condition DEFAULT 'Good',
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT NULL,
+	deleted_at TIMESTAMP DEFAULT NULL
+);
+
+-- LMS
+
+-- Employement Categories
+CREATE TABLE employment_categories (
+	id BIGSERIAL PRIMARY KEY,
+	category_name VARCHAR(50) UNIQUE NOT NULL,
+	description TEXT,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Leave Master
+CREATE TABLE leave_master (
+	leave_id BIGSERIAL PRIMARY KEY,
+	leave_code VARCHAR(20) UNIQUE NOT NULL,
+	leave_name VARCHAR(200) UNIQUE NOT NULL,
+	description TEXT NOT NULL,
+	is_paid BOOLEAN DEFAULT TRUE,
+	is_active BOOLEAN DEFAULT TRUE,
+	create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Leave Policy
+CREATE TABLE leave_policy (
+	policy_id BIGSERIAL PRIMARY KEY,
+	leave_id BIGINT NOT NULL,
+	employment_category_id BIGINT NOT NULL,
+	policy_name VARCHAR(255) UNIQUE NOT NULL,
+	annual_quota DECIMAL(10, 2) DEFAULT 0,
+	monthly_accural DECIMAL(10, 2) DEFAULT 0,
+	max_consecutive_days INTEGER,
+	carry_forward_allowed BOOLEAN DEFAULT FALSE,
+	max_carry_forward INT DEFAULT 0,
+	encashment_allowed BOOLEAN DEFAULT FALSE,
+	probation_allowed BOOLEAN DEFAULT FALSE,
+	notice_period_allowed BOOLEAN DEFAULT FALSE,
+	weekend_included BOOLEAN DEFAULT FALSE,
+	holiday_included BOOLEAN DEFAULT FALSE,
+	effective_from DATE NOT NULL,
+	effective_to DATE NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	deleted_at TIMESTAMP DEFAULT NULL,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT fk_leave FOREIGN KEY(leave_id) REFERENCES leave_master(leave_id) ON DELETE CASCADE,
+	CONSTRAINT fk_emp_category FOREIGN KEY(employment_category_id) REFERENCES employment_categories(id) ON DELETE CASCADE
+);
