@@ -77,7 +77,7 @@ CREATE TABLE employees(
 	deleted_at TIMESTAMP DEFAULT NULL,
 	CONSTRAINT fk_dept FOREIGN KEY(dept_id) REFERENCES departments(id) ON DELETE CASCADE,
 	CONSTRAINT fk_desg FOREIGN KEY(desg_id) REFERENCES designations(id) ON DELETE CASCADE,
-	CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+	CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Employee Addresss
@@ -197,4 +197,78 @@ CREATE TABLE leave_policy (
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT fk_leave FOREIGN KEY(leave_id) REFERENCES leave_master(leave_id) ON DELETE CASCADE,
 	CONSTRAINT fk_emp_category FOREIGN KEY(employment_category_id) REFERENCES employment_categories(id) ON DELETE CASCADE
+);
+
+--Announcements
+CREATE TABLE announcements (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    target_audience VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT NULL,
+    deleted_at TIMESTAMP DEFAULT NULL,
+    CONSTRAINT fk_created_by
+        FOREIGN KEY(created_by)
+        REFERENCES employees(id)
+        ON DELETE CASCADE
+);
+
+--Resignations
+CREATE TABLE resignations (
+    id BIGSERIAL PRIMARY KEY,
+    employee_id BIGINT NOT NULL,
+    resignation_date DATE NOT NULL,
+    last_working_day DATE NOT NULL,
+    reason TEXT NOT NULL,
+    status VARCHAR(30) DEFAULT 'Pending',
+    approved_by BIGINT,
+    approved_at TIMESTAMP,
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT NULL,
+    CONSTRAINT fk_employee
+        FOREIGN KEY(employee_id)
+        REFERENCES employees(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_approved_by
+        FOREIGN KEY(approved_by)
+        REFERENCES employees(id)
+        ON DELETE SET NULL
+);
+--time_entries
+CREATE TABLE time_entries (
+    id BIGSERIAL PRIMARY KEY,
+
+    employee_id BIGINT NOT NULL,
+
+    attendance_id BIGINT,
+
+    project_name VARCHAR(150) NOT NULL,
+
+    task_name VARCHAR(255) NOT NULL,
+
+    description TEXT,
+
+    start_time TIMESTAMP NOT NULL,
+
+    end_time TIMESTAMP,
+
+    total_hours DECIMAL(5,2),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_employee
+        FOREIGN KEY(employee_id)
+        REFERENCES employees(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_attendance
+        FOREIGN KEY(attendance_id)
+        REFERENCES attendances(id)
+        ON DELETE SET NULL
 );
