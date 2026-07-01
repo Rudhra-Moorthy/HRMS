@@ -1,6 +1,6 @@
-const pool = require('../../../config/db');
+const pool = require('../../../../config/db');
 const documentRepo = require('../repository/candidateDocumentRepo');
-const documentDto = require('../dto/candidateDocument');
+const documentDto = require('../dto/candidateDocumentDto');
 
 const createDocument = async (body) => {
 

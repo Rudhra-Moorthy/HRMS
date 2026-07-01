@@ -42,7 +42,7 @@ router.delete(
     documentController.deleteDocument
 );
 
-router.get('/:id','/candidate/:candidateId',
+router.get('/:id',
     authenticate,
     authorize('candidateDocument.view'),
     documentController.getDocumentsByCandidateId

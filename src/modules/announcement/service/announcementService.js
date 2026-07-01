@@ -1,5 +1,5 @@
 const pool = require('../../../config/db');
-const announcementRepo = require('../repository/announcementRepo');
+const announcementRepo = require('../repository/announcementRepository');
 const announcementDto = require('../dto/announcementDto');
 
 const createAnnouncement = async (body) => {

@@ -1,6 +1,6 @@
 const pool = require('../../../config/db');
 const resignationRepo = require('../repository/resignationRepo');
-const resignationDto = require('../dto/resignationDto');
+const resignationDto = require('../ dto/resignationDto');
 
 const createResignation = async (body) => {
     const client = await pool.connect();

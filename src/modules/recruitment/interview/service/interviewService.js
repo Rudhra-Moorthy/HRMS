@@ -1,5 +1,5 @@
-const pool = require('../../../config/db');
-const interviewRepo = require('../repository/interviewRepo');
+const pool = require('../../../../config/db');
+const interviewRepo = require('../repository/ interviewRepo');
 const interviewDto = require('../dto/interview');
 
 const createInterview = async (body) => {

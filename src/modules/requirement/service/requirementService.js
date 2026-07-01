@@ -1,6 +1,6 @@
 const pool = require('../../../config/db');
-const requirementRepo = require('../repository/requirementRepo');
-const requirementDto = require('../dto/requirement');
+const requirementRepo = require('../repository/requirementRepository');
+const requirementDto = require('../dto/requirementDto');
 
 const createRequirement = async (body) => {
 
