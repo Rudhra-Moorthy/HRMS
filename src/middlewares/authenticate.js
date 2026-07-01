@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { verifyAccessToken } = require('../utils/jwt');
+const { verifyAccessToken } = require('../modules/utils/jwt');
 
 const authenticate = (req, res, next) => {
 

@@ -1,6 +1,6 @@
-const { generateToken, generateRefreshToken, verifyRefreshToken } = require('../../utils/jwt');
-const { comparePassword } = require('../../utils/hash');
-const userService = require('../../user/service/userService');
+const { generateToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt');
+const { comparePassword } = require('../utils/hash');
+const userService = require('../user/userService');
 
 
 // Login

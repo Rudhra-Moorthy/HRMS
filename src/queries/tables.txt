@@ -68,6 +68,7 @@ CREATE TABLE employees(
 	full_name VARCHAR(255) NOT NULL,
 	email VARCHAR(255) UNIQUE NOT NULL,
 	phone VARCHAR(15) UNIQUE NOT NULL,
+	employment_category_id BIGINT NOT NULL,
 	dept_id BIGINT NOT NULL,
 	desg_id BIGINT NOT NULL,
 	date_of_joining DATE NOT NULL,
@@ -78,6 +79,7 @@ CREATE TABLE employees(
 	CONSTRAINT fk_dept FOREIGN KEY(dept_id) REFERENCES departments(id) ON DELETE CASCADE,
 	CONSTRAINT fk_desg FOREIGN KEY(desg_id) REFERENCES designations(id) ON DELETE CASCADE,
 	CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+	CONSTRAINT fk_emp_category FOREIGN KEY(employment_category_id) REFERENCES employment_categories(id) ON DELETE CASCADE
 );
 
 -- Employee Addresss
@@ -153,7 +155,7 @@ CREATE TABLE company_assets (
 
 -- LMS
 
--- Employement Categories
+-- Employment Categories
 CREATE TABLE employment_categories (
 	id BIGSERIAL PRIMARY KEY,
 	category_name VARCHAR(50) UNIQUE NOT NULL,
@@ -161,6 +163,15 @@ CREATE TABLE employment_categories (
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+INSERT INTO employment_categories
+(category_name, description)
+VALUES
+('INTERN', 'Intern Employees'),
+('PROBATION', 'Probation Employees'),
+('PERMANENT', 'Permanent Employees'),
+('CONTRACT', 'Contract Employees'),
+('CONSULTANT', 'Consultant Employees');
 
 -- Leave Master
 CREATE TABLE leave_master (
@@ -173,6 +184,17 @@ CREATE TABLE leave_master (
 	create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+INSERT INTO leave_master
+(leave_code, leave_name, description)
+VALUES
+('AL', 'Annual Leave', 'Annual Privilege Leave'),
+('SL', 'Sick Leave', 'Medical Leave'),
+('CL', 'Casual Leave', 'Casual Leave'),
+('ML', 'Maternity Leave', 'Maternity Leave'),
+('PL', 'Paternity Leave', 'Paternity Leave'),
+('VL', 'Vacation Leave', 'Vacation Leave'),
+('LOP', 'Loss Of Pay', 'Unpaid Leave'),;
 
 -- Leave Policy
 CREATE TABLE leave_policy (
@@ -190,6 +212,7 @@ CREATE TABLE leave_policy (
 	notice_period_allowed BOOLEAN DEFAULT FALSE,
 	weekend_included BOOLEAN DEFAULT FALSE,
 	holiday_included BOOLEAN DEFAULT FALSE,
+	gender_specific VARCHAR(255) NOT NULL,
 	effective_from DATE NOT NULL,
 	effective_to DATE NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -197,4 +220,388 @@ CREATE TABLE leave_policy (
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT fk_leave FOREIGN KEY(leave_id) REFERENCES leave_master(leave_id) ON DELETE CASCADE,
 	CONSTRAINT fk_emp_category FOREIGN KEY(employment_category_id) REFERENCES employment_categories(id) ON DELETE CASCADE
+);
+
+INSERT INTO leave_policy
+(
+    leave_id,
+    employment_category_id,
+    policy_name,
+    annual_quota,
+    monthly_accural,
+    max_consecutive_days,
+    carry_forward_allowed,
+    max_carry_forward,
+    encashment_allowed,
+    probation_allowed,
+    notice_period_allowed,
+    weekend_included,
+    holiday_included,
+    gender_specific,
+    effective_from,
+    effective_to
+)
+VALUES
+
+/* =========================================================
+   1. INTERN
+   ========================================================= */
+
+-- Annual Leave
+(1, 1, 'Intern Annual Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Sick Leave
+(2, 1, 'Intern Sick Leave', 3, 0.25, 3, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Casual Leave
+(3, 1, 'Intern Casual Leave', 1, 0.08, 1, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Maternity Leave
+(4, 1, 'Intern Maternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'FEMALE', CURRENT_DATE, NULL),
+
+-- Paternity Leave
+(5, 1, 'Intern Paternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'MALE', CURRENT_DATE, NULL),
+
+-- Loss Of Pay
+(6, 1, 'Intern Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+
+/* =========================================================
+   2. PROBATION
+   ========================================================= */
+
+-- Annual Leave
+(1, 2, 'Probation Annual Leave', 6, 0.50, 5, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Sick Leave
+(2, 2, 'Probation Sick Leave', 3, 0.25, 3, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Casual Leave
+(3, 2, 'Probation Casual Leave', 2, 0.17, 2, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Maternity Leave
+(4, 2, 'Probation Maternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'FEMALE', CURRENT_DATE, NULL),
+
+-- Paternity Leave
+(5, 2, 'Probation Paternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'MALE', CURRENT_DATE, NULL),
+
+-- Loss Of Pay
+(6, 2, 'Probation Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+
+/* =========================================================
+   3. PERMANENT
+   ========================================================= */
+
+-- Annual Leave
+(1, 3, 'Permanent Annual Leave', 18, 1.50, 15, TRUE, 10, TRUE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Sick Leave
+(2, 3, 'Permanent Sick Leave', 12, 1.00, 7, TRUE, 5, FALSE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Casual Leave
+(3, 3, 'Permanent Casual Leave', 6, 0.50, 3, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Maternity Leave
+(4, 3, 'Permanent Maternity Leave', 182, 0, 182, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'FEMALE', CURRENT_DATE, NULL),
+
+-- Paternity Leave
+(5, 3, 'Permanent Paternity Leave', 10, 0, 10, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'MALE', CURRENT_DATE, NULL),
+
+-- Loss Of Pay
+(6, 3, 'Permanent Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+
+/* =========================================================
+   4. CONTRACT
+   ========================================================= */
+
+-- Annual Leave
+(1, 4, 'Contract Annual Leave', 12, 1.00, 10, TRUE, 5, FALSE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Sick Leave
+(2, 4, 'Contract Sick Leave', 6, 0.50, 5, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Casual Leave
+(3, 4, 'Contract Casual Leave', 4, 0.33, 2, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Maternity Leave
+(4, 4, 'Contract Maternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'FEMALE', CURRENT_DATE, NULL),
+
+-- Paternity Leave
+(5, 4, 'Contract Paternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'MALE', CURRENT_DATE, NULL),
+
+-- Loss Of Pay
+(6, 4, 'Contract Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+
+/* =========================================================
+   5. CONSULTANT
+   ========================================================= */
+
+-- Annual Leave
+(1, 5, 'Consultant Annual Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Sick Leave
+(2, 5, 'Consultant Sick Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Casual Leave
+(3, 5, 'Consultant Casual Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Maternity Leave
+(4, 5, 'Consultant Maternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'FEMALE', CURRENT_DATE, NULL),
+
+-- Paternity Leave
+(5, 5, 'Consultant Paternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'MALE', CURRENT_DATE, NULL),
+
+-- Loss Of Pay
+(6, 5, 'Consultant Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL);
+
+CREATE TABLE employee_leave_balance (
+	balance_id BIGSERIAL PRIMARY KEY,
+	employee_id BIGINT NOT NULL,
+	leave_id BIGINT NOT NULL,
+	opening_balance DECIMAL(5, 2) DEFAULT 0,
+	earned_leave DECIMAL(5, 2) DEFAULT 0,
+	used_leave DECIMAL(5, 2) DEFAULT 0,
+	available_leave DECIMAL(5, 2) DEFAULT 0,
+	year INTEGER NOT NULL,
+	last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE(employee_id, leave_id, year),
+	CONSTRAINT fk_employee FOREIGN KEY(employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+	CONSTRAINT fk_leave FOREIGN KEY(leave_id) REFERENCES leave_master(leave_id) ON DELETE CASCADE
+);
+
+-- Leave Accrual
+CREATE TABLE leave_accrual (
+	accrual_id BIGSERIAL PRIMARY KEY,
+	employee_id BIGINT NOT NULL,
+	leave_id BIGINT NOT NULL,
+	credited_days DECIMAL(5, 2),
+	accrual_date DATE,
+	remarks TEXT,
+	CONSTRAINT fk_employee FOREIGN KEY(employee_id) REFERENCES employees(id),
+	CONSTRAINT fk_leave FOREIGN KEY(leave_id) REFERENCES leave_master(leave_id)
+);
+
+-- Leave Application
+CREATE TABLE leave_applications (
+	application_id BIGSERIAL PRIMARY KEY,
+	employee_id BIGINT NOT NULL,
+	leave_id BIGINT NOT NULL,
+	from_date DATE NOT NULL,
+	to_date DATE NOT NULL,
+	total_days DECIMAL NOT NULL,
+	reason TEXT,
+	is_full_day BOOLEAN DEFAULT TRUE,
+	status VARCHAR DEFAULT 'PENDING',
+	applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	approved_by BIGINT REFERENCES employees(id),
+	approved_at TIMESTAMP,
+	rejection_reason TEXT,
+	CONSTRAINT fk_leave FOREIGN KEY(leave_id) REFERENCES leave_master(leave_id),
+	CONSTRAINT fk_employee FOREIGN KEY(employee_id) REFERENCES employees(id)
+);
+
+-- Leave Approval History
+CREATE TABLE leave_approval_history (
+    approval_id BIGSERIAL PRIMARY KEY,
+    application_id BIGINT NOT NULL,
+    approver_id BIGINT REFERENCES employees(id),
+    action VARCHAR(30),
+    remarks TEXT,
+    action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT fk_application FOREIGN KEY(application_id) REFERENCES leave_applications(application_id) ON DELETE CASCADE
+);
+
+-- Leave Cancellation
+CREATE TABLE leave_cancellation (
+    cancellation_id BIGSERIAL PRIMARY KEY,
+
+    application_id BIGINT
+    REFERENCES leave_applications(application_id),
+
+    employee_id BIGINT
+    REFERENCES employees(id),
+
+    reason TEXT,
+
+    cancelled_at TIMESTAMP
+    DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Leave Carry Forward
+CREATE TABLE leave_carry_forward (
+    carry_id BIGSERIAL PRIMARY KEY,
+
+    employee_id BIGINT
+    REFERENCES employees(id),
+
+    leave_id BIGINT
+    REFERENCES leave_master(leave_id),
+
+    previous_year INTEGER,
+
+    carried_days DECIMAL(5,2),
+
+    carry_date DATE
+);
+
+-- Leave Encashment
+CREATE TABLE leave_encashment (
+    encashment_id BIGSERIAL PRIMARY KEY,
+
+    employee_id BIGINT
+    REFERENCES employees(id),
+
+    leave_id BIGINT
+    REFERENCES leave_master(leave_id),
+
+    encashed_days DECIMAL(5,2),
+
+    amount DECIMAL(12,2),
+
+    status VARCHAR(30)
+    DEFAULT 'PENDING',
+
+    requested_date DATE
+);
+
+-- Holidays
+CREATE TABLE company_holiday (
+    holiday_id BIGSERIAL PRIMARY KEY,
+
+    holiday_name VARCHAR(100),
+
+    holiday_date DATE,
+
+    holiday_type VARCHAR(30),
+
+    description TEXT
+);
+
+-- Attendance Poilcy
+CREATE TABLE attendance_policies (
+	policy_id BIGSERIAL PRIMARY KEY,
+	policy_name VARCHAR(100) UNIQUE NOT NULL,
+	office_start_time TIME NOT NULL,
+	office_end_time TIME NOT NULL,
+	grace_period_minutes INT DEFAULT 15,
+	full_day_hours DECIMAL(5, 2) DEFAULT 8,
+	half_day_hours DECIMAL(5, 2) DEFAULT 4,
+	weekly_working_days INT DEFAULT 5,
+	is_active BOOLEAN DEFAULT TRUE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP
+);
+
+INSERT INTO attendance_policies(
+	policy_name, 
+	office_start_time, 
+	office_end_time,
+	grace_period_minutes,
+	full_day_hours,
+	half_day_hours,
+	weekly_working_days
+)
+VALUES ('General Office', '09:30', '18:30', 15, 8, 4, 5);
+
+-- Shifts
+CREATE TABLE shifts (
+	shift_id BIGSERIAL PRIMARY KEY,
+	shift_code VARCHAR(20) UNIQUE NOT NULL,
+	shift_name VARCHAR(100) UNIQUE NOT NULL,
+	start_time TIME NOT NULL,
+	end_time TIME NOT NULL,
+	grace_minutes INT,
+	weekly_off VARCHAR(20),
+	is_night_shift BOOLEAN DEFAULT FALSE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP
+);
+
+INSERT INTO shifts (
+	shift_code, 
+	shift_name,
+	start_time, 
+	end_time,
+	grace_minutes,
+	weekly_off,
+	is_night_shift
+) 
+VALUES
+('GS', 'General Shift', '09:30', '18:30', 15, 'Sunday', FALSE),
+('MS', 'Morning Shift', '06:00', '15:00', 10, 'Sunday', FALSE),
+('NS', 'night shift', '22:00', '06:00', 15, 'Sunday', TRUE);
+
+-- Employee Addentance Policy
+CREATE TABLE employee_attendance_policy(
+	policy_id BIGSERIAL PRIMARY KEY,
+	employee_id BIGINT NOT NULL,
+	attendance_policy_id BIGINT NOT NULL,
+	effective_from DATE NOT NULL,
+	effective_to DATE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP,
+	CONSTRAINT fk_employee FOREIGN KEY(employee_id) REFERENCES employees(id),
+	CONSTRAINT fk_attendance_policy FOREIGN KEY(attendance_policy_id) REFERENCES attendance_policies(policy_id)
+);
+
+
+-- Employee Shift
+CREATE TABLE employee_shifts(
+	id BIGSERIAL PRIMARY KEY,
+	employee_id BIGINT NOT NULL,
+	shift_id BIGINT NOT NULL,
+	effective_from DATE NOT NULL,
+	effective_to DATE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP,
+	CONSTRAINT fk_employee FOREIGN KEY(employee_id) REFERENCES employees(id),
+	CONSTRAINT fk_shift FOREIGN KEY(shift_id) REFERENCES shifts(shift_id)
+);
+
+-- Attendance Table
+CREATE TABLE attendances(
+	id BIGSERIAL PRIMARY KEY,
+	employee_id BIGINT NOT NULL,
+	attendance_date DATE NOT NULL,
+	check_in TIMESTAMP,
+	check_out TIMESTAMP,
+	shift_id BIGINT,
+	attendance_policy_id BIGINT,
+	total_hours DECIMAL(5, 2),
+	late_minutes INT DEFAULT 0,
+	early_departure_minutes INT DEFAULT 0,
+	overtime_hours DECIMAL(5, 2) DEFAULT 0,
+	attendance_status VARCHAR(20) CHECK(attendance_status IN ('PRESENT', 'ABSENT', 'HALF_DAY', 'LEAVE', 'HOLIDAY', 'WEEK_OFF')),
+	location VARCHAR(255),
+	remarks TEXT,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP,
+	UNIQUE(employee_id, attendance_date),
+	CONSTRAINT fk_employee FOREIGN KEY(employee_id) REFERENCES employees(id),
+	CONSTRAINT fk_attendance_policy FOREIGN KEY(attendance_policy_id) REFERENCES attendance_policies(policy_id),
+	CONSTRAINT fk_shift FOREIGN KEY(shift_id) REFERENCES shifts(shift_id)
+);
+
+-- Attendance Regularisations
+CREATE TABLE attendance_regularisations (
+	regularisation_id BIGSERIAL PRIMARY KEY,
+	attendance_id BIGINT REFERENCES attendances(id),
+	employee_id BIGINT REFERENCES employees(id),
+	regularisation_date DATE,
+	request_type VARCHAR(30) CHECK(
+		request_type IN ('CHECK_IN', 'CHECK_OUT', 'BOTH')
+	),
+	reason TEXT,
+	requested_check_in TIMESTAMP,
+	requested_check_out TIMESTAMP,
+	status VARCHAR(20) DEFAULT 'PENDING' CHECK (
+		status IN ('PENDING', 'APPROVED', 'REJECTED')
+	),
+	approved_by BIGINT REFERENCES employees(id),
+	rejected_reason TEXT,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP
 );
