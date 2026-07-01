@@ -1,5 +1,3 @@
-const pool = require('../../../config/db');
-
 // Employee Table
 const createEmployee = async(client, employee) => {
 
@@ -12,11 +10,12 @@ const createEmployee = async(client, employee) => {
             phone,
             dept_id, 
             desg_id,
+            employment_category_id,
             date_of_joining,
             salary,
             status
         ) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'Active')
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'Active')
         RETURNING *
     `;
     const values = [
@@ -27,6 +26,7 @@ const createEmployee = async(client, employee) => {
         employee.phone,
         employee.departmentId,
         employee.designationId,
+        employee.employmentCategoryId,
         employee.joinDate,
         employee.salary
     ];
@@ -37,14 +37,14 @@ const createEmployee = async(client, employee) => {
 }
 
 // User Table
-const createUser = async (client, user, roleId) => {
+const createUser = async (client, user) => {
 
     const query = `
         INSERT INTO users (email, password, role_id)
         VALUES ($1, $2, $3)
         RETURNING id;
     `;
-    const values = [user.email, user.password, roleId];
+    const values = [user.email, user.password, user.roleId];
 
     const result = await client.query(query, values);
     return result.rows[0];
@@ -93,7 +93,7 @@ const createSalary = async (client, employeeId, salary) => {
             conveyance,
             special_allowances,
             advance_bonus,
-            company_pf
+            company_pf,
             aplc,
             provident_fund_employee,
             esi,
@@ -127,57 +127,220 @@ const createSalary = async (client, employeeId, salary) => {
     await client.query(query, values);
 }
 
-// Map the leave Policy
-const assignLeavePolicy = async (client, employeeId, policyId) => {
+/*
+    This gets the policies that are assigned to the respective employment category
+*/
+const getActiveLeavePoliciesByCategory = async (client, employmentCategoryId) => {
 
     const query = `
-        SELECT * 
+        SELECT 
+            policy_id, 
+            leave_id,
+            annual_quota,
+            monthly_accrual
         FROM leave_policy
-        WHERE policy_id = $1
+        WHERE employment_category_id = $1 AND 
+            effective_from <= CURRENT_DATE AND
+            (effective_to IS NULL OR effective_to >= CURRENT_DATE)
+        ORDER BY leave_id; 
     `;
 
-    const policy = await client.query(query, [policyId]);
+    const result = await client.query(query, [employmentCategoryId]);
+    return result.rows;
 
-    const policies = policy.rows;
+}
 
-    for(const leave of policies) {
+/*
+    Create employee leave balances
+*/
+const createEmployeeLeaveBalances = async(client, employeeId, policies) => {
 
-        const q = `
-            INSERT INTO employee_leave_balance (
+    for(const policy of policies) {
+
+        const query = `
+            INSERT INTO employee_leave_balances (
                 employee_id,
-                leave_id, 
+                leave_id,
+                policy_id,
                 opening_balance,
                 earned_leave,
                 used_leave,
                 available_leave,
-                year
+                year,
+                effective_from,
+                effective_to,
+                created_at
             )
-            VALUES ($1, $2, $3, 0, 0, $3, EXTRACT(YEAR FROM CURRENT_DATE));
+            VALUES ($1, $2, $3, $4, 0, 0, $4, EXTRACT(YEAR FROM CURRENT_DATE), CURRENT_DATE, NULL, NOW());
         `;
 
-        await client.query(q, [employeeId, leave.leave_id, leave.annual_quota]);
+        const values = [employeeId, policy.leave_id, policy.policy_id, policy.annual_quota];
+        await client.query(query, values);
+
     }
 
 }
 
-// Attendance summary
-const initializeAttendanceSummary = async (client, employeeId) => {
+
+/*
+    Initializ leave accruals
+*/
+const initializeLeaveAccruals = async (client, employeeId, policies) => {
+
+    for(const policy of policies) {
+
+        if(Number(policy.monthly_accrual) <= 0) {
+            continue;
+        }
+
+        const query = `
+            INSERT INTO leave_accruals (
+                employee_id,
+                policy_id,
+                leave_id,
+                credited_days,
+                accrual_date,
+                remarks,
+                effective_from,
+                effective_to,
+                created_at
+            )
+            VALUES ($1, $2, $3, 0, CURRENT_DATE, 'Employee Onboarding', CURRENT_DATE, NULL, NOW()); 
+        `;
+
+        const values = [employeeId, policy.policy_id, policy.leave_id];
+
+        await client.query(query, values);
+
+    }
+
+}
+
+/* Get default attendance policy */
+const getDefaultAttendancePolicy = async (client) => {
 
     const query = `
-        INSERT INTO attendance_summary (
-            employee_id,
-            present_days, 
-            absent_days,
-            leave_days
-        )
-        VALUES ($1, 0, 0, 0);
+        SELECT id
+        FROM attendance_policies
+        WHERE is_active = TRUE
+        ORDER BY policy_id
+        LIMIT 1;
     `;
 
-    await client.query(query, [employeeId]);
+    const result = await client.query(query);
+
+    return result.rows[0];
+};
+
+/* Assign Attendance Policy */
+const assignAttendancePolicy = async (client, employeeId, attendancePolicyId) => {
+
+    const query = `
+        INSERT INTO employee_attendance_policy (
+            employee_id,
+            attendance_policy_id,
+            effective_from
+        )
+        VALUES ($1, $2, CURRENT_DATE)
+        RETURNING *;
+    `;
+    const values = [employeeId, attendancePolicyId];
+
+    const result = await client.query(query, values);
+    return result.rows[0];
+
+}
+
+/* Get Department Default shift */
+const getDepartmentDefaultShift = async (client, departmentId) => {
+
+    const query = `
+        SELECT 
+            ds.shift_id,
+            s.shift_name
+        FROM department_shifts ds
+        JOIN shifts s
+            ON ds.shift_id = s.shift_id
+        WHERE ds.department_id = $1 AND ds.is_default = TRUE
+        LIMIT 1;
+    `;
+    
+    const result = await client.query(query, [departmentId]);
+    return result.rows[0];
+
+}
+
+/* Assign Employee Shift */
+const assignEmployeeShift = async (client, employeeId, shiftId) => {
+
+    const query = `
+        INSERT INTO employee_shifts (
+            employee_id,
+            shift_id,
+            effective_from
+        ) 
+        VALUES ($1, $2, CURRENT_DATE)
+        RETURNING *;
+    `;
+
+    const result = await client.query(query, [employeeId, shiftId]);
+
+    return result.rows[0];
+}
+
+/* Get Reporting Manager */
+const getDepartmentReportingManager = async (client, departmentId) => {
+
+    const query = `
+        SELECT
+            manager_id
+        FROM department_reporting_managers
+        WHERE
+            department_id = $1
+            AND is_default = TRUE
+        LIMIT 1;
+    `;
+
+    const result = await client.query(query, [departmentId]);
+
+    return result.rows[0];
+    
+};
+
+/* Assign Reporting Manager */
+const assignReportingManager = async (client, employeeId, managerId) => {
+
+    const query = `
+        INSERT INTO employee_reporting_manager
+        (
+            employee_id,
+            manager_id,
+            effective_from
+        )
+        VALUES ($1, $2, CURRENT_DATE)
+        RETURNING *;
+    `;
+    const values = [
+        employeeId,
+        managerId
+    ];
+
+    const result = await client.query(query, values);
+    return result.rows[0];
+
+}
+
+// Get User by email
+const findUserByEmail = async (client, email) => {
+
+    const query =  `SELECT * FROM users WHERE email = $1 LIMIT 1`;
+    const result = await client.query(query, [email]);
+    return result.rows[0];
+
 }
 
 // Get All Employees
-const getEmployees = async () => {
+const getEmployees = async (client) => {
 
     const query = `
         SELECT 
@@ -197,7 +360,7 @@ const getEmployees = async () => {
             s.conveyance,
             s.special_allowances,
             s.advance_bonus,
-            s.company_pf
+            s.company_pf,
             s.aplc,
             s.provident_fund_employee,
             s.esi,
@@ -214,9 +377,9 @@ const getEmployees = async () => {
             ea.postal_code
         FROM employees e
         JOIN departments d
-            ON e.dept_id = d.id;
+            ON e.dept_id = d.id
         JOIN designations ds
-            ON e.desg_id = ds.id;
+            ON e.desg_id = ds.id
         JOIN salary_structure s
             ON e.id = s.emp_id
         JOIN employee_addresses ea
@@ -224,13 +387,13 @@ const getEmployees = async () => {
         WHERE e.deleted_at IS NULL;
     `;
 
-    const result = await pool.query(query);
+    const result = await client.query(query);
     
     return result.rows;
 }
 
 // Get Employee by id
-const getEmployee = async (id) => {
+const getEmployee = async (client, id) => {
 
     const query = `
         SELECT 
@@ -250,7 +413,7 @@ const getEmployee = async (id) => {
             s.conveyance,
             s.special_allowances,
             s.advance_bonus,
-            s.company_pf
+            s.company_pf,
             s.aplc,
             s.provident_fund_employee,
             s.esi,
@@ -267,17 +430,17 @@ const getEmployee = async (id) => {
             ea.postal_code
         FROM employees e
         JOIN departments d
-            ON e.dept_id = d.id;
+            ON e.dept_id = d.id
         JOIN designations ds
-            ON e.desg_id = ds.id;
+            ON e.desg_id = ds.id
         JOIN salary_structure s
             ON e.id = s.emp_id
         JOIN employee_addresses ea
             ON e.id = ea.employee_id
-        WHERE id = $1 AND e.deleted_at IS NULL;
+        WHERE e.id = $1 AND e.deleted_at IS NULL;
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await client.query(query, [id]);
 
     return result.rows[0];
 }
@@ -290,7 +453,8 @@ const updateEmployee = async (client, id, payload) => {
         email: "email",
         phone: "phone", 
         departmentId: "dept_id", 
-        designationId: "desg_id", 
+        designationId: "desg_id",
+        employmentCategoryId: "employment_category_id",
         dateOfJoining: "date_of_joining", 
         salary: "salary" 
     }
@@ -311,7 +475,7 @@ const updateEmployee = async (client, id, payload) => {
     if(fields.length === 0) {
         return;
     }
-    values.push[id];
+    values.push(id);
 
     const query = `
         UPDATE employees 
@@ -321,7 +485,7 @@ const updateEmployee = async (client, id, payload) => {
         WHERE id = $${idx};
     `;
 
-    const result = client.query(query, values);
+    const result = await client.query(query, values);
 
     return true;
 }
@@ -395,7 +559,7 @@ const updateSalary = async (client, employeeId, salary) => {
         aplc: "aplc",
         providentFund: "provident_fund",
         esi: "esi",
-        professionalTax: "professiona_tax",
+        professionalTax: "professional_tax",
         totalCtc: "total_ctc",
         grossSalary: "gross_salary",
         totalDeductions: "total_deductions",
@@ -432,6 +596,39 @@ const updateSalary = async (client, employeeId, salary) => {
 
 }
 
+/*
+    Update leave policy after Employment Category Changes
+    Ex: Intern -> Permanent 
+*/
+/* 1. Close Current Leave Balances */
+const closeCurrentLeaveBalances = async (client, employeeId) => {
+
+    const query = `
+        UPDATE employee_leave_balance
+        SET
+            effective_to = CURRENT_DATE - INTERVAL '1 day',
+            updated_at = NOW()
+        WHERE employee_id = $1 AND effective_to IS NULL;
+    `;
+
+    await client.query(query, [employeeId]);
+}
+
+const closeCurrentLeaveAccruals = async (client, employeeId) => {
+
+    const query = `
+        UPDATE leave_accruals
+        SET
+            effective_to = CURRENT_DATE - INTERVAL '1 day',
+            updated_at = NOW(),
+            remarks = CONCAT(COALESCE(remarks, ''), ' | Closed due to Employment Category Change')
+        WHERE employee_id = $1 AND effective_to IS NULL;
+    `;
+
+    await client.query(query,[employeeId]);
+
+}
+
 // Delete employee -> soft delete
 const deleteEmployee = async (client, id) => {
 
@@ -446,19 +643,48 @@ const deleteEmployee = async (client, id) => {
     return true;
 }
 
+/* 
+    Delete user from the users table -> soft delete
+*/
+const deleteUser = async (client, userId) => {
+
+    const query = `
+        UPDATE users
+        SET 
+            is_active = FALSE, 
+            updated_at = NOW(),
+            deleted_at = NOW()
+        WHERE id = $1;
+    `;
+
+    await client.query(query, [userId]);
+
+}
+
 
 module.exports = {
     createEmployee,
     createUser,
     createAddress,
     createSalary,
-    assignLeavePolicy,
-    initializeAttendanceSummary,
+    getActiveLeavePoliciesByCategory,
+    createEmployeeLeaveBalances,
+    initializeLeaveAccruals,
+    getDefaultAttendancePolicy,
+    assignAttendancePolicy,
+    getDepartmentDefaultShift,
+    assignEmployeeShift,
+    getDepartmentReportingManager,
+    assignReportingManager,
     getEmployees,
     getEmployee,
+    findUserByEmail,
     updateEmployee, 
     updateAddress,
     updateSalary,
     updateUserEmail,
+    closeCurrentLeaveBalances,
+    closeCurrentLeaveAccruals,
     deleteEmployee,
+    deleteUser,
 };

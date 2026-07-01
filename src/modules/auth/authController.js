@@ -1,51 +1,7 @@
-const userService = require('../services/userService');
-const authService = require('../services/authService');
+const userService = require('../user/userService');
+const authService = require('./authService');
 const { comparePassword } = require('../utils/hash');
 const { generateToken, generateRefreshToken } = require('../utils/jwt');
-
-/*const login = async (req, res) => {
-
-    const { email, password, role } = req.body;
-
-    const user = await userService.getUserByEmail(email);
-
-    if(!user) {
-        return res.status(404).json({
-            message: 'User not found'
-        });
-    }
-
-    const isValid = await comparePassword(password, user.password);
-
-    if(!isValid) {
-        return res.status(401).json({
-            message: 'Invalid Credentials'
-        });
-    }
-
-    if(user.role !== role) {
-        return res.status(401).json({
-            message: 'Inappropriate Role'
-        });
-    }
-
-    const token = generateToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    await userService.saveRefreshToken(user.id, refreshToken);
-
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: false,
-        sameSite: 'strict'
-    });
-
-    return res.json({
-        accessToken: token,
-        refreshToken
-    });
-
-} */
 
 const login = async (req, res) => {
 

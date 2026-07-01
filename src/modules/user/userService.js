@@ -1,7 +1,7 @@
-const pool = require('../../../config/db');
-const { hashPassword } = require('../../utils/hash');
-const userDto = require('../dto/user');
-const userRepo = require('../repository/userRepo');
+const pool = require('../../config/db');
+const { hashPassword } = require('../utils/hash');
+const userDto = require('./user');
+const userRepo = require('./userRepo');
 // Get user by email
 const getUserByEmail = async (email) => {
     
@@ -20,18 +20,6 @@ const getUserByEmail = async (email) => {
     );
 
     return userDto(userResult.rows[0]);
-}
-
-const createUser = async (client, user) => {
-
-    try {
-
-        await userRepo.createUser(client, user);
-
-    } catch(err) {
-        throw err;
-    }
-    
 }
 
 // Get user by Id
@@ -97,5 +85,4 @@ module.exports = {
     findRefreshToken,
     getUserById,
     deleteRefreshToken,
-    createUser,
 }
