@@ -2,9 +2,9 @@ const express = require('express');
 
 const router = express.Router();
 
-const candidateRoutes = require('./candidate/candidateRoute');
-const interviewRoutes = require('./interview/interviewRoutes.js.js');
-const documentRoutes = require('./document/documentRoutes.js');
+const candidateRoutes = require('./candidate/candidateRoutes');
+const interviewRoutes = require('./interview/interviewRoutes');
+const documentRoutes = require('./document/documentRoutes');
 
 router.use('/candidates', candidateRoutes);
 

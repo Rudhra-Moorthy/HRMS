@@ -1,6 +1,6 @@
 const pool = require('../../../config/db');
 
-const createInterview = async (interview) => {
+const createInterview = async (interview, client) => {
 
     const query = `
         INSERT INTO interview_schedules
@@ -32,13 +32,13 @@ const createInterview = async (interview) => {
         interview.feedback
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 };
 
 
-const getAllInterviews = async () => {
+const getAllInterviews = async (client) => {
 
     const query = `
         SELECT *
@@ -46,14 +46,14 @@ const getAllInterviews = async () => {
         ORDER BY interview_date;
     `;
 
-    const result = await pool.query(query);
+    const result = await client.query(query);
 
     return result.rows;
 
 };
 
 
-const getInterviewById = async (id) => {
+const getInterviewById = async (id, client) => {
 
     const query = `
         SELECT *
@@ -61,14 +61,14 @@ const getInterviewById = async (id) => {
         WHERE id=$1;
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await client.query(query, [id]);
 
     return result.rows[0];
 
 };
 
 
-const updateInterview = async (id, interview) => {
+const updateInterview = async (id, interview, client) => {
 
     const query = `
         UPDATE interview_schedules
@@ -99,14 +99,14 @@ const updateInterview = async (id, interview) => {
         id
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 
 };
 
 
-const deleteInterview = async (id) => {
+const deleteInterview = async (id, client) => {
 
     const query = `
         DELETE FROM interview_schedules
@@ -114,7 +114,7 @@ const deleteInterview = async (id) => {
         RETURNING *;
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await client.query(query, [id]);
 
     return result.rows[0];
 

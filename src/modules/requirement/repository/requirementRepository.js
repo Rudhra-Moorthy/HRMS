@@ -1,6 +1,6 @@
 const pool = require('../../../config/db');
 
-const createRequirement = async (requirement) => {
+const createRequirement = async (requirement,client) => {
 
     const query = `
         INSERT INTO requirements
@@ -30,13 +30,13 @@ const createRequirement = async (requirement) => {
         requirement.status
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 };
 
 
-const getAllRequirements = async () => {
+const getAllRequirements = async (client) => {
 
     const query = `
         SELECT *
@@ -44,13 +44,13 @@ const getAllRequirements = async () => {
         ORDER BY created_at DESC
     `;
 
-    const result = await pool.query(query);
+    const result = await client.query(query);
 
     return result.rows;
 };
 
 
-const getRequirementById = async (id) => {
+const getRequirementById = async (id, client) => {
 
     const query = `
         SELECT *
@@ -58,13 +58,13 @@ const getRequirementById = async (id) => {
         WHERE id=$1
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await client.query(query, [id]);
 
     return result.rows[0];
 };
 
 
-const updateRequirement = async (id, requirement) => {
+const updateRequirement = async (id, requirement, client) => {
 
     const query = `
         UPDATE requirements
@@ -92,13 +92,13 @@ const updateRequirement = async (id, requirement) => {
         id
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 };
 
 
-const deleteRequirement = async (id) => {
+const deleteRequirement = async (id, client) => {
 
     const query = `
         DELETE FROM requirements
@@ -106,7 +106,7 @@ const deleteRequirement = async (id) => {
         RETURNING *
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await client.query(query, [id]);
 
     return result.rows[0];
 };

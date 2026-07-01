@@ -4,14 +4,42 @@ const router = express.Router();
 
 const interviewController = require('./controller/interviewController');
 
-router.post('/', interviewController.createInterview);
+const authenticate = require('../../../middlewares/authenticate');
+const authorize = require('../../../middlewares/authorize');
 
-router.get('/', interviewController.getAllInterviews);
+router.post(
+    '/',
+    authenticate,
+    authorize('interview.create'),
+    interviewController.createInterview
+);
 
-router.get('/:id', interviewController.getInterviewById);
+router.get(
+    '/',
+    authenticate,
+    authorize('interview.view'),
+    interviewController.getAllInterviews
+);
 
-router.put('/:id', interviewController.updateInterview);
+router.get(
+    '/:id',
+    authenticate,
+    authorize('interview.view'),
+    interviewController.getInterviewById
+);
 
-router.delete('/:id', interviewController.deleteInterview);
+router.patch(
+    '/:id',
+    authenticate,
+    authorize('interview.update'),
+    interviewController.updateInterview
+);
+
+router.delete(
+    '/:id',
+    authenticate,
+    authorize('interview.delete'),
+    interviewController.deleteInterview
+);
 
 module.exports = router;

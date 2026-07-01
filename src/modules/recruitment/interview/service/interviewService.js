@@ -1,41 +1,139 @@
+const pool = require('../../../config/db');
 const interviewRepo = require('../repository/interviewRepo');
 const interviewDto = require('../dto/interview');
 
 const createInterview = async (body) => {
 
-    const result = await interviewRepo.createInterview(body);
+    const client = await pool.connect();
 
-    return interviewDto(result);
+    try {
+
+        await client.query('BEGIN');
+
+        const result = await interviewRepo.createInterview(client, body);
+
+        await client.query('COMMIT');
+
+        return interviewDto(result);
+
+    } catch (err) {
+
+        await client.query('ROLLBACK');
+        throw err;
+
+    } finally {
+
+        client.release();
+
+    }
 
 };
 
 const getAllInterviews = async () => {
 
-    const interviews = await interviewRepo.getAllInterviews();
+    const client = await pool.connect();
 
-    return interviews.map(interviewDto);
+    try {
+
+        await client.query('BEGIN');
+
+        const interviews = await interviewRepo.getAllInterviews(client);
+
+        await client.query('COMMIT');
+
+        return interviews.map(interviewDto);
+
+    } catch (err) {
+
+        await client.query('ROLLBACK');
+        throw err;
+
+    } finally {
+
+        client.release();
+
+    }
 
 };
 
 const getInterviewById = async (id) => {
 
-    const interview = await interviewRepo.getInterviewById(id);
+    const client = await pool.connect();
 
-    return interviewDto(interview);
+    try {
+
+        await client.query('BEGIN');
+
+        const interview = await interviewRepo.getInterviewById(client, id);
+
+        await client.query('COMMIT');
+
+        return interviewDto(interview);
+
+    } catch (err) {
+
+        await client.query('ROLLBACK');
+        throw err;
+
+    } finally {
+
+        client.release();
+
+    }
 
 };
 
 const updateInterview = async (id, body) => {
 
-    const result = await interviewRepo.updateInterview(id, body);
+    const client = await pool.connect();
 
-    return interviewDto(result);
+    try {
+
+        await client.query('BEGIN');
+
+        const result = await interviewRepo.updateInterview(client, id, body);
+
+        await client.query('COMMIT');
+
+        return interviewDto(result);
+
+    } catch (err) {
+
+        await client.query('ROLLBACK');
+        throw err;
+
+    } finally {
+
+        client.release();
+
+    }
 
 };
 
 const deleteInterview = async (id) => {
 
-    return await interviewRepo.deleteInterview(id);
+    const client = await pool.connect();
+
+    try {
+
+        await client.query('BEGIN');
+
+        const result = await interviewRepo.deleteInterview(client, id);
+
+        await client.query('COMMIT');
+
+        return result;
+
+    } catch (err) {
+
+        await client.query('ROLLBACK');
+        throw err;
+
+    } finally {
+
+        client.release();
+
+    }
 
 };
 

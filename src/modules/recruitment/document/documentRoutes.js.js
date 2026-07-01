@@ -4,12 +4,42 @@ const router = express.Router();
 
 const documentController = require('./controller/documentController');
 
-router.post('/', documentController.createDocument);
+const authenticate = require('../../../middlewares/authenticate');
+const authorize = require('../../../middlewares/authorize');
 
-router.get('/', documentController.getAllDocuments);
+router.post(
+    '/',
+    authenticate,
+    authorize('document.create'),
+    documentController.createDocument
+);
 
-router.get('/:id', documentController.getDocumentById);
+router.get(
+    '/',
+    authenticate,
+    authorize('document.view'),
+    documentController.getAllDocuments
+);
 
-router.delete('/:id', documentController.deleteDocument);
+router.get(
+    '/:id',
+    authenticate,
+    authorize('document.view'),
+    documentController.getDocumentById
+);
+
+router.put(
+    '/:id',
+    authenticate,
+    authorize('document.update'),
+    documentController.updateDocument
+);
+
+router.delete(
+    '/:id',
+    authenticate,
+    authorize('document.delete'),
+    documentController.deleteDocument
+);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 const pool = require('../../../config/db');
 
-const createAnnouncement = async (announcement) => {
+const createAnnouncement = async (client,announcement) => {
 
     const query = `
         INSERT INTO announcements
@@ -23,12 +23,12 @@ const createAnnouncement = async (announcement) => {
         announcement.created_by
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 };
 
-const getAllAnnouncements = async () => {
+const getAllAnnouncements = async (client) => {
 
     const query = `
         SELECT *
@@ -36,12 +36,12 @@ const getAllAnnouncements = async () => {
         ORDER BY created_at DESC
     `;
 
-    const result = await pool.query(query);
+    const result = await client.query(query);
 
     return result.rows;
 };
 
-const getAnnouncementById = async (id) => {
+const getAnnouncementById = async (id,client) => {
 
     const query = `
         SELECT *
@@ -49,12 +49,12 @@ const getAnnouncementById = async (id) => {
         WHERE id=$1
     `;
 
-    const result = await pool.query(query,[id]);
+    const result = await client.query(query,[id]);
 
     return result.rows[0];
 };
 
-const updateAnnouncement = async (id, announcement) => {
+const updateAnnouncement = async (id, announcement, client) => {
 
     const query = `
         UPDATE announcements
@@ -76,12 +76,12 @@ const updateAnnouncement = async (id, announcement) => {
         id
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 };
 
-const deleteAnnouncement = async (id) => {
+const deleteAnnouncement = async (id,client) => {
 
     const query = `
         DELETE FROM announcements
@@ -89,7 +89,7 @@ const deleteAnnouncement = async (id) => {
         RETURNING *;
     `;
 
-    const result = await pool.query(query,[id]);
+    const result = await client.query(query,[id]);
 
     return result.rows[0];
 };

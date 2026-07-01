@@ -1,6 +1,6 @@
 const pool = require('../../../config/db');
 
-const createDocument = async (document) => {
+const createDocument = async (document,client) => {
 
     const query = `
         INSERT INTO candidate_documents
@@ -21,13 +21,13 @@ const createDocument = async (document) => {
         document.file_url
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 };
 
 
-const getAllDocuments = async () => {
+const getAllDocuments = async (client) => {
 
     const query = `
         SELECT *
@@ -35,14 +35,15 @@ const getAllDocuments = async () => {
         ORDER BY uploaded_at DESC;
     `;
 
-    const result = await pool.query(query);
+    const result = await client.query(query);
 
     return result.rows;
+
 
 };
 
 
-const getDocumentById = async (id) => {
+const getDocumentById = async (id, client) => {
 
     const query = `
         SELECT *
@@ -50,14 +51,14 @@ const getDocumentById = async (id) => {
         WHERE id=$1;
     `;
 
-    const result = await pool.query(query,[id]);
+    const result = await client.query(query,[id]);
 
     return result.rows[0];
 
 };
 
 
-const getDocumentsByCandidateId = async (candidateId) => {
+const getDocumentsByCandidateId = async (candidateId, client) => {
 
     const query = `
         SELECT *
@@ -65,14 +66,14 @@ const getDocumentsByCandidateId = async (candidateId) => {
         WHERE candidate_id=$1;
     `;
 
-    const result = await pool.query(query,[candidateId]);
+    const result = await client.query(query,[candidateId]);
 
     return result.rows;
 
 };
 
 
-const updateDocument = async (id, document) => {
+const updateDocument = async (id, document, client) => {
 
     const query = `
         UPDATE candidate_documents
@@ -89,14 +90,14 @@ const updateDocument = async (id, document) => {
         id
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 
 };
 
 
-const deleteDocument = async (id) => {
+const deleteDocument = async (id, client) => {
 
     const query = `
         DELETE FROM candidate_documents
@@ -104,7 +105,7 @@ const deleteDocument = async (id) => {
         RETURNING *;
     `;
 
-    const result = await pool.query(query,[id]);
+    const result = await client.query(query,[id]);
 
     return result.rows[0];
 

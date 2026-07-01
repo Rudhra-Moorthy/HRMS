@@ -1,42 +1,80 @@
+const pool = require('../../../config/db');
 const resignationRepo = require('../repository/resignationRepo');
 const resignationDto = require('../dto/resignationDto');
 
 const createResignation = async (body) => {
-
-    const result = await resignationRepo.createResignation(body);
-
-    return resignationDto(result);
-
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const result = await resignationRepo.createResignation(client, body);
+        await client.query('COMMIT');
+        return resignationDto(result);
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
 };
 
 const getAllResignations = async () => {
-
-    const resignations = await resignationRepo.getAllResignations();
-
-    return resignations.map(resignationDto);
-
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const resignations = await resignationRepo.getAllResignations(client);
+        await client.query('COMMIT');
+        return resignations.map(resignationDto);
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
 };
 
 const getResignationById = async (id) => {
-
-    const resignation = await resignationRepo.getResignationById(id);
-
-    return resignationDto(resignation);
-
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const resignation = await resignationRepo.getResignationById(client, id);
+        await client.query('COMMIT');
+        return resignationDto(resignation);
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
 };
 
 const updateResignation = async (id, body) => {
-
-    const result = await resignationRepo.updateResignation(id, body);
-
-    return resignationDto(result);
-
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const result = await resignationRepo.updateResignation(client, id, body);
+        await client.query('COMMIT');
+        return resignationDto(result);
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
 };
 
 const deleteResignation = async (id) => {
-
-    return await resignationRepo.deleteResignation(id);
-
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const result = await resignationRepo.deleteResignation(client, id);
+        await client.query('COMMIT');
+        return result;
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
 };
 
 module.exports = {

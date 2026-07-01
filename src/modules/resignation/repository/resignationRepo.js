@@ -1,6 +1,6 @@
 const pool = require('../../../config/db');
 
-const createResignation = async (resignation) => {
+const createResignation = async (resignation,client) => {
 
     const query = `
         INSERT INTO resignations
@@ -30,15 +30,15 @@ const createResignation = async (resignation) => {
         resignation.remarks
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 
 };
 
-const getAllResignations = async () => {
+const getAllResignations = async (client) => {
 
-    const result = await pool.query(`
+    const result = await client.query(`
         SELECT *
         FROM resignations
         ORDER BY created_at DESC
@@ -48,9 +48,9 @@ const getAllResignations = async () => {
 
 };
 
-const getResignationById = async (id) => {
+const getResignationById = async (id,client) => {
 
-    const result = await pool.query(
+    const result = await client.query(
         `SELECT * FROM resignations WHERE id=$1`,
         [id]
     );
@@ -59,7 +59,7 @@ const getResignationById = async (id) => {
 
 };
 
-const updateResignation = async (id, resignation) => {
+const updateResignation = async (id, resignation, client) => {
 
     const query = `
         UPDATE resignations
@@ -87,15 +87,15 @@ const updateResignation = async (id, resignation) => {
         id
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 
 };
 
-const deleteResignation = async (id) => {
+const deleteResignation = async (id, client) => {
 
-    const result = await pool.query(
+    const result = await client.query(
         `
         DELETE FROM resignations
         WHERE id=$1

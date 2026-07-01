@@ -1,17 +1,44 @@
 const express = require('express');
-
 const router = express.Router();
 
 const resignationController = require('./controller/resignationController');
 
-router.post('/', resignationController.createResignation);
+const authenticate = require('../../middlewares/authenticate');
+const authorize = require('../../middlewares/authorize');
 
-router.get('/', resignationController.getAllResignations);
+router.post(
+    '/',
+    authenticate,
+    authorize('resignation.create'),
+    resignationController.createResignation
+);
 
-router.get('/:id', resignationController.getResignationById);
+router.get(
+    '/',
+    authenticate,
+    authorize('resignation.view'),
+    resignationController.getAllResignations
+);
 
-router.put('/:id', resignationController.updateResignation);
+router.get(
+    '/:id',
+    authenticate,
+    authorize('resignation.view'),
+    resignationController.getResignationById
+);
 
-router.delete('/:id', resignationController.deleteResignation);
+router.patch(
+    '/:id',
+    authenticate,
+    authorize('resignation.update'),
+    resignationController.updateResignation
+);
+
+router.delete(
+    '/:id',
+    authenticate,
+    authorize('resignation.delete'),
+    resignationController.deleteResignation
+);
 
 module.exports = router;

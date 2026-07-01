@@ -1,6 +1,6 @@
 const pool = require('../../../config/db');
 
-const createCandidate = async (candidate) => {
+const createCandidate = async (candidate,client) => {
 
     const query = `
         INSERT INTO candidates
@@ -26,14 +26,14 @@ const createCandidate = async (candidate) => {
         candidate.status
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 
 };
 
 
-const getAllCandidates = async () => {
+const getAllCandidates = async (client) => {
 
     const query = `
         SELECT *
@@ -41,14 +41,14 @@ const getAllCandidates = async () => {
         ORDER BY created_at DESC;
     `;
 
-    const result = await pool.query(query);
+    const result = await client.query(query);
 
     return result.rows;
 
 };
 
 
-const getCandidateById = async (id) => {
+const getCandidateById = async (id, client) => {
 
     const query = `
         SELECT *
@@ -56,14 +56,14 @@ const getCandidateById = async (id) => {
         WHERE id = $1;
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await client.query(query, [id]);
 
     return result.rows[0];
 
 };
 
 
-const updateCandidate = async (id, candidate) => {
+const updateCandidate = async (id, candidate, client) => {
 
     const query = `
         UPDATE candidates
@@ -89,14 +89,14 @@ const updateCandidate = async (id, candidate) => {
         id
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 
 };
 
 
-const deleteCandidate = async (id) => {
+const deleteCandidate = async (id, client) => {
 
     const query = `
         DELETE FROM candidates
@@ -104,7 +104,7 @@ const deleteCandidate = async (id) => {
         RETURNING *;
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await client.query(query, [id]);
 
     return result.rows[0];
 

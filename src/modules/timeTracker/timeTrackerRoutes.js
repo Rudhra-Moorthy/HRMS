@@ -1,19 +1,51 @@
 const express = require('express');
-
 const router = express.Router();
 
 const timeTrackerController = require('./controller/timeTrackerController');
 
-router.post('/', timeTrackerController.createTimeEntry);
+const authenticate = require('../../middlewares/authenticate');
+const authorize = require('../../middlewares/authorize');
 
-router.get('/', timeTrackerController.getAllTimeEntries);
+router.post(
+    '/',
+    authenticate,
+    authorize('time-tracker.create'),
+    timeTrackerController.createTimeEntry
+);
 
-router.get('/:id', timeTrackerController.getTimeEntryById);
+router.get(
+    '/',
+    authenticate,
+    authorize('time-tracker.view'),
+    timeTrackerController.getAllTimeEntries
+);
 
-router.put('/:id', timeTrackerController.updateTimeEntry);
+router.get(
+    '/timesheet/:employeeId',
+    authenticate,
+    authorize('time-tracker.view'),
+    timeTrackerController.getTimesheet
+);
 
-router.delete('/:id', timeTrackerController.deleteTimeEntry);
+router.get(
+    '/:id',
+    authenticate,
+    authorize('time-tracker.view'),
+    timeTrackerController.getTimeEntryById
+);
 
-router.get('/timesheet/:employeeId', timeTrackerController.getTimesheet);
+router.put(
+    '/:id',
+    authenticate,
+    authorize('time-tracker.update'),
+    timeTrackerController.updateTimeEntry
+);
+
+router.delete(
+    '/:id',
+    authenticate,
+    authorize('time-tracker.delete'),
+    timeTrackerController.deleteTimeEntry
+);
 
 module.exports = router;

@@ -4,14 +4,42 @@ const router = express.Router();
 
 const candidateController = require('./controller/candidateController');
 
-router.post('/', candidateController.createCandidate);
+const authenticate = require('../../../middlewares/authenticate');
+const authorize = require('../../../middlewares/authorize');
 
-router.get('/', candidateController.getAllCandidates);
+router.post(
+    '/',
+    authenticate,
+    authorize('candidate.create'),
+    candidateController.createCandidate
+);
 
-router.get('/:id', candidateController.getCandidateById);
+router.get(
+    '/',
+    authenticate,
+    authorize('candidate.view'),
+    candidateController.getAllCandidates
+);
 
-router.put('/:id', candidateController.updateCandidate);
+router.get(
+    '/:id',
+    authenticate,
+    authorize('candidate.view'),
+    candidateController.getCandidateById
+);
 
-router.delete('/:id', candidateController.deleteCandidate);
+router.patch(
+    '/:id',
+    authenticate,
+    authorize('candidate.update'),
+    candidateController.updateCandidate
+);
+
+router.delete(
+    '/:id',
+    authenticate,
+    authorize('candidate.delete'),
+    candidateController.deleteCandidate
+);
 
 module.exports = router;

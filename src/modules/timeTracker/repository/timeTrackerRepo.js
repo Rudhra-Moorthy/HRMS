@@ -1,6 +1,6 @@
 const pool = require('../../../config/db');
 
-const createTimeEntry = async (timeEntry) => {
+const createTimeEntry = async (timeEntry,client) => {
 
     const query = `
         INSERT INTO time_entries
@@ -30,12 +30,12 @@ const createTimeEntry = async (timeEntry) => {
         timeEntry.total_hours
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 };
 
-const getAllTimeEntries = async () => {
+const getAllTimeEntries = async (client) => {
 
     const query = `
         SELECT *
@@ -43,12 +43,12 @@ const getAllTimeEntries = async () => {
         ORDER BY created_at DESC;
     `;
 
-    const result = await pool.query(query);
+    const result = await client.query(query);
 
     return result.rows;
 };
 
-const getTimeEntryById = async (id) => {
+const getTimeEntryById = async (id, client) => {
 
     const query = `
         SELECT *
@@ -56,12 +56,12 @@ const getTimeEntryById = async (id) => {
         WHERE id = $1;
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await client.query(query, [id]);
 
     return result.rows[0];
 };
 
-const updateTimeEntry = async (id, timeEntry) => {
+const updateTimeEntry = async (id, timeEntry,client) => {
 
     const query = `
         UPDATE time_entries
@@ -87,12 +87,12 @@ const updateTimeEntry = async (id, timeEntry) => {
         id
     ];
 
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
 
     return result.rows[0];
 };
 
-const deleteTimeEntry = async (id) => {
+const deleteTimeEntry = async (id, client) => {
 
     const query = `
         DELETE FROM time_entries
@@ -100,11 +100,11 @@ const deleteTimeEntry = async (id) => {
         RETURNING *;
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await client.query(query, [id]);
 
     return result.rows[0];
 };
-const getTimesheet = async (employeeId) => {
+const getTimesheet = async (employeeId, client) => {
 
     const query = `
         SELECT
@@ -123,7 +123,7 @@ const getTimesheet = async (employeeId) => {
         ORDER BY te.start_time DESC;
     `;
 
-    const result = await pool.query(query, [employeeId]);
+    const result = await client.query(query, [employeeId]);
 
     return result.rows;
 };

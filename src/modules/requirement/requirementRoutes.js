@@ -1,19 +1,44 @@
 const express = require('express');
-
 const router = express.Router();
 
 const requirementController = require('./controller/requirementController');
 
+const authenticate = require('../../middlewares/authenticate');
+const authorize = require('../../middlewares/authorize');
 
-router.post('/', requirementController.createRequirement);
+router.post(
+    '/',
+    authenticate,
+    authorize('requirement.create'),
+    requirementController.createRequirement
+);
 
-router.get('/', requirementController.getAllRequirements);
+router.get(
+    '/',
+    authenticate,
+    authorize('requirement.view'),
+    requirementController.getAllRequirements
+);
 
-router.get('/:id', requirementController.getRequirementById);
+router.get(
+    '/:id',
+    authenticate,
+    authorize('requirement.view'),
+    requirementController.getRequirementById
+);
 
-router.put('/:id', requirementController.updateRequirement);
+router.patch(
+    '/:id',
+    authenticate,
+    authorize('requirement.update'),
+    requirementController.updateRequirement
+);
 
-router.delete('/:id', requirementController.deleteRequirement);
-
+router.delete(
+    '/:id',
+    authenticate,
+    authorize('requirement.delete'),
+    requirementController.deleteRequirement
+);
 
 module.exports = router;

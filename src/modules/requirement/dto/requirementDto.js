@@ -6,7 +6,7 @@ const requirementDto = (requirement) => {
         id: requirement.id,
         requirementCode: requirement.requirement_code,
         position: requirement.position,
-        deptId: requirement.dept_id,
+        deptId: requirement.dept_id,    
         vacancies: requirement.vacancies,
         experienceRequired: requirement.experience_required,
         jobDescription: requirement.job_description,
