@@ -1,9 +1,7 @@
-const pool = require('../../../config/db');
-
-const createTimeEntry = async (timeEntry,client) => {
+const createTimeEntry = async (client,timeEntry) => {
 
     const query = `
-        INSERT INTO time_entries
+        INSERT INTO time_tracker
         (
             employee_id,
             attendance_id,
@@ -39,7 +37,7 @@ const getAllTimeEntries = async (client) => {
 
     const query = `
         SELECT *
-        FROM time_entries
+        FROM time_tracker
         ORDER BY created_at DESC;
     `;
 
@@ -48,11 +46,11 @@ const getAllTimeEntries = async (client) => {
     return result.rows;
 };
 
-const getTimeEntryById = async (id, client) => {
+const getTimeEntryById = async (client, id) => {
 
     const query = `
         SELECT *
-        FROM time_entries
+        FROM time_tracker
         WHERE id = $1;
     `;
 
@@ -61,10 +59,10 @@ const getTimeEntryById = async (id, client) => {
     return result.rows[0];
 };
 
-const updateTimeEntry = async (id, timeEntry,client) => {
+const updateTimeEntry = async (client, id, timeEntry) => {
 
     const query = `
-        UPDATE time_entries
+        UPDATE time_tracker
         SET
             project_name = $1,
             task_name = $2,
@@ -92,10 +90,10 @@ const updateTimeEntry = async (id, timeEntry,client) => {
     return result.rows[0];
 };
 
-const deleteTimeEntry = async (id, client) => {
+const deleteTimeEntry = async (client, id) => {
 
     const query = `
-        DELETE FROM time_entries
+        DELETE FROM time_tracker
         WHERE id = $1
         RETURNING *;
     `;
@@ -104,7 +102,7 @@ const deleteTimeEntry = async (id, client) => {
 
     return result.rows[0];
 };
-const getTimesheet = async (employeeId, client) => {
+const getTimesheet = async (client, employeeId) => {
 
     const query = `
         SELECT
@@ -116,7 +114,7 @@ const getTimesheet = async (employeeId, client) => {
             te.start_time,
             te.end_time,
             te.total_hours
-        FROM time_entries te
+        FROM time_tracker te
         JOIN employees e
             ON te.employee_id = e.id
         WHERE te.employee_id = $1

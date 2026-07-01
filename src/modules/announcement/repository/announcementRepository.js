@@ -1,4 +1,3 @@
-const pool = require('../../../config/db');
 
 const createAnnouncement = async (client,announcement) => {
 
@@ -41,7 +40,7 @@ const getAllAnnouncements = async (client) => {
     return result.rows;
 };
 
-const getAnnouncementById = async (id,client) => {
+const getAnnouncementById = async (client, id) => {
 
     const query = `
         SELECT *
@@ -54,7 +53,7 @@ const getAnnouncementById = async (id,client) => {
     return result.rows[0];
 };
 
-const updateAnnouncement = async (id, announcement, client) => {
+const updateAnnouncement = async (client, id, announcement) => {
 
     const query = `
         UPDATE announcements
@@ -81,7 +80,7 @@ const updateAnnouncement = async (id, announcement, client) => {
     return result.rows[0];
 };
 
-const deleteAnnouncement = async (id,client) => {
+const deleteAnnouncement = async (client,id) => {
 
     const query = `
         DELETE FROM announcements

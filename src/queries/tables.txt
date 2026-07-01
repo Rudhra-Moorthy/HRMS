@@ -200,7 +200,7 @@ CREATE TABLE leave_policy (
 );
 
 --Announcements
-CREATE TABLE announcements (
+CREATE TABLE announcements(
     id BIGSERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     category VARCHAR(100) NOT NULL,
@@ -208,7 +208,7 @@ CREATE TABLE announcements (
     message TEXT NOT NULL,
     created_by BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP DEFAULT NULL,
     CONSTRAINT fk_created_by
         FOREIGN KEY(created_by)
@@ -216,59 +216,138 @@ CREATE TABLE announcements (
         ON DELETE CASCADE
 );
 
+--Requirements
+CREATE TABLE requirements(
+    id BIGSERIAL PRIMARY KEY,
+    requirement_code VARCHAR(50) UNIQUE NOT NULL,
+    position VARCHAR(255) NOT NULL,
+    dept_id BIGINT NOT NULL,
+    vacancies INT NOT NULL,
+    experience_required VARCHAR(100) NOT NULL,
+    job_description TEXT NOT NULL,
+    priority VARCHAR(30)
+        CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'URGENT')),
+    status VARCHAR(30)
+        DEFAULT 'OPEN'
+        CHECK (status IN ('OPEN', 'CLOSED', 'ON_HOLD')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL,
+    CONSTRAINT fk_department
+        FOREIGN KEY (dept_id)
+        REFERENCES departments(id)
+        ON DELETE CASCADE
+);
+
+--Candidates
+CREATE TABLE candidates(
+    id BIGSERIAL PRIMARY KEY,
+    requirement_id BIGINT NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(20),
+    experience DECIMAL(4,1),
+    current_company VARCHAR(255),
+    current_ctc DECIMAL(12,2),
+    expected_ctc DECIMAL(12,2),
+    notice_period INT,
+    skills TEXT,
+    resume_url TEXT,
+    status VARCHAR(30)
+        DEFAULT 'Applied',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL,
+    CONSTRAINT fk_requirement
+        FOREIGN KEY(requirement_id)
+        REFERENCES requirements(id)
+        ON DELETE CASCADE
+);
+
+--Candidate Documents
+CREATE TABLE candidate_documents(
+    id BIGSERIAL PRIMARY KEY,
+    candidate_id BIGINT NOT NULL,
+    document_name VARCHAR(255),
+    document_type VARCHAR(100),
+    file_url TEXT,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_candidate
+        FOREIGN KEY(candidate_id)
+        REFERENCES candidates(id)
+        ON DELETE CASCADE
+);
+
+--Interview
+CREATE TABLE interview_schedules(
+    id BIGSERIAL PRIMARY KEY,
+    candidate_id BIGINT NOT NULL,
+    interviewer_id BIGINT NOT NULL,
+    interview_type VARCHAR(100) NOT NULL,
+    interview_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME,
+    meeting_link TEXT,
+    status VARCHAR(30)
+        DEFAULT 'Scheduled'
+        CHECK (status IN ('Scheduled','Completed','Cancelled')),
+    feedback TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_candidate
+        FOREIGN KEY(candidate_id)
+        REFERENCES candidates(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_interviewer
+        FOREIGN KEY(interviewer_id)
+        REFERENCES employees(id)
+);
+
+
 --Resignations
-CREATE TABLE resignations (
+CREATE TABLE resignations(
     id BIGSERIAL PRIMARY KEY,
     employee_id BIGINT NOT NULL,
     resignation_date DATE NOT NULL,
-    last_working_day DATE NOT NULL,
-    reason TEXT NOT NULL,
-    status VARCHAR(30) DEFAULT 'Pending',
+    last_working_day DATE,
+    reason TEXT,
+    status VARCHAR(30)
+    DEFAULT 'Pending'
+    CHECK (status IN ('Pending', 'Approved', 'Rejected')),
     approved_by BIGINT,
     approved_at TIMESTAMP,
     remarks TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL,
     CONSTRAINT fk_employee
         FOREIGN KEY(employee_id)
-        REFERENCES employees(id)
-        ON DELETE CASCADE,
+        REFERENCES employees(id),
     CONSTRAINT fk_approved_by
         FOREIGN KEY(approved_by)
         REFERENCES employees(id)
-        ON DELETE SET NULL
 );
---time_entries
-CREATE TABLE time_entries (
+
+--Time Tracker
+CREATE TABLE time_tracker(
     id BIGSERIAL PRIMARY KEY,
-
     employee_id BIGINT NOT NULL,
-
     attendance_id BIGINT,
-
-    project_name VARCHAR(150) NOT NULL,
-
-    task_name VARCHAR(255) NOT NULL,
-
+    project_name VARCHAR(255),
+    task_name VARCHAR(255),
     description TEXT,
-
     start_time TIMESTAMP NOT NULL,
-
     end_time TIMESTAMP,
-
     total_hours DECIMAL(5,2),
-
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     CONSTRAINT fk_employee
         FOREIGN KEY(employee_id)
         REFERENCES employees(id)
         ON DELETE CASCADE,
-
     CONSTRAINT fk_attendance
         FOREIGN KEY(attendance_id)
         REFERENCES attendances(id)
-        ON DELETE SET NULL
+        ON DELETE CASCADE
 );

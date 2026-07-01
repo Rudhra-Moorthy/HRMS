@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 
-const documentController = require('./controller/documentController');
+const documentController = require('./controller/candidateDocumentController');
 
 const authenticate = require('../../../middlewares/authenticate');
 const authorize = require('../../../middlewares/authorize');
@@ -10,36 +10,42 @@ const authorize = require('../../../middlewares/authorize');
 router.post(
     '/',
     authenticate,
-    authorize('document.create'),
+    authorize('candidateDocument.create'),
     documentController.createDocument
 );
 
 router.get(
     '/',
     authenticate,
-    authorize('document.view'),
+    authorize('candidateDocument.view'),
     documentController.getAllDocuments
 );
 
 router.get(
     '/:id',
     authenticate,
-    authorize('document.view'),
+    authorize('candidateDocument.view'),
     documentController.getDocumentById
 );
 
 router.put(
     '/:id',
     authenticate,
-    authorize('document.update'),
+    authorize('candidateDocument.update'),
     documentController.updateDocument
 );
 
 router.delete(
     '/:id',
     authenticate,
-    authorize('document.delete'),
+    authorize('candidateDocument.delete'),
     documentController.deleteDocument
+);
+
+router.get('/:id','/candidate/:candidateId',
+    authenticate,
+    authorize('candidateDocument.view'),
+    documentController.getDocumentsByCandidateId
 );
 
 module.exports = router;

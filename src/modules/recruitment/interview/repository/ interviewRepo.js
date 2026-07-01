@@ -1,6 +1,5 @@
-const pool = require('../../../config/db');
 
-const createInterview = async (interview, client) => {
+const createInterview = async (client, interview) => {
 
     const query = `
         INSERT INTO interview_schedules
@@ -53,7 +52,7 @@ const getAllInterviews = async (client) => {
 };
 
 
-const getInterviewById = async (id, client) => {
+const getInterviewById = async (client, id) => {
 
     const query = `
         SELECT *
@@ -68,7 +67,7 @@ const getInterviewById = async (id, client) => {
 };
 
 
-const updateInterview = async (id, interview, client) => {
+const updateInterview = async (client, id, interview) => {
 
     const query = `
         UPDATE interview_schedules
@@ -106,7 +105,7 @@ const updateInterview = async (id, interview, client) => {
 };
 
 
-const deleteInterview = async (id, client) => {
+const deleteInterview = async (client, id) => {
 
     const query = `
         DELETE FROM interview_schedules

@@ -1,6 +1,5 @@
-const pool = require('../../../config/db');
 
-const createDocument = async (document,client) => {
+const createDocument = async (client,document) => {
 
     const query = `
         INSERT INTO candidate_documents
@@ -43,7 +42,7 @@ const getAllDocuments = async (client) => {
 };
 
 
-const getDocumentById = async (id, client) => {
+const getDocumentById = async (client, id) => {
 
     const query = `
         SELECT *
@@ -58,7 +57,7 @@ const getDocumentById = async (id, client) => {
 };
 
 
-const getDocumentsByCandidateId = async (candidateId, client) => {
+const getDocumentsByCandidateId = async (client, candidateId) => {
 
     const query = `
         SELECT *
@@ -73,7 +72,7 @@ const getDocumentsByCandidateId = async (candidateId, client) => {
 };
 
 
-const updateDocument = async (id, document, client) => {
+const updateDocument = async (client, id, document) => {
 
     const query = `
         UPDATE candidate_documents
@@ -97,7 +96,7 @@ const updateDocument = async (id, document, client) => {
 };
 
 
-const deleteDocument = async (id, client) => {
+const deleteDocument = async (client,id) => {
 
     const query = `
         DELETE FROM candidate_documents

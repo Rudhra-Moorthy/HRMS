@@ -9,42 +9,42 @@ const authorize = require('../../middlewares/authorize');
 router.post(
     '/',
     authenticate,
-    authorize('time-tracker.create'),
+    authorize('timeTracker.create'),
     timeTrackerController.createTimeEntry
 );
 
 router.get(
     '/',
     authenticate,
-    authorize('time-tracker.view'),
+    authorize('timeTracker.view'),
     timeTrackerController.getAllTimeEntries
 );
 
 router.get(
     '/timesheet/:employeeId',
     authenticate,
-    authorize('time-tracker.view'),
+    authorize('timeTracker.view'),
     timeTrackerController.getTimesheet
 );
 
 router.get(
     '/:id',
     authenticate,
-    authorize('time-tracker.view'),
+    authorize('timeTracker.view'),
     timeTrackerController.getTimeEntryById
 );
 
 router.put(
     '/:id',
     authenticate,
-    authorize('time-tracker.update'),
+    authorize('timeTracker.update'),
     timeTrackerController.updateTimeEntry
 );
 
 router.delete(
     '/:id',
     authenticate,
-    authorize('time-tracker.delete'),
+    authorize('timeTracker.delete'),
     timeTrackerController.deleteTimeEntry
 );
 

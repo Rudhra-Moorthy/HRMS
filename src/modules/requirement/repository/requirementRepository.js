@@ -1,6 +1,5 @@
-const pool = require('../../../config/db');
 
-const createRequirement = async (requirement,client) => {
+const createRequirement = async (client, requirement) => {
 
     const query = `
         INSERT INTO requirements
@@ -50,7 +49,7 @@ const getAllRequirements = async (client) => {
 };
 
 
-const getRequirementById = async (id, client) => {
+const getRequirementById = async (client, id) => {
 
     const query = `
         SELECT *
@@ -64,7 +63,7 @@ const getRequirementById = async (id, client) => {
 };
 
 
-const updateRequirement = async (id, requirement, client) => {
+const updateRequirement = async (client, id, requirement) => {
 
     const query = `
         UPDATE requirements
@@ -98,7 +97,7 @@ const updateRequirement = async (id, requirement, client) => {
 };
 
 
-const deleteRequirement = async (id, client) => {
+const deleteRequirement = async (client, id) => {
 
     const query = `
         DELETE FROM requirements

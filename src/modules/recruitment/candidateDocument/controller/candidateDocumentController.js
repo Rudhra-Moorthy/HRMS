@@ -1,4 +1,4 @@
-const documentService = require('../service/documentService');
+const documentService = require('../service/candidateDocumentService');
 
 const createDocument = async (req, res) => {
 
@@ -109,10 +109,65 @@ const deleteDocument = async (req,res)=>{
     }
 
 };
+const updateDocument = async (req, res) => {
+    try {
+
+        const data = await documentService.updateDocument(
+            req.params.id,
+            req.body
+        );
+
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: "Document not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Document updated successfully",
+            data
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+
+    }
+};
+const getDocumentsByCandidateId = async (req, res) => {
+
+    try {
+
+        const data = await documentService.getDocumentsByCandidateId(
+            req.params.candidateId
+        );
+
+        return res.status(200).json({
+            success: true,
+            data
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+
+    }
+
+};
 
 module.exports = {
     createDocument,
     getAllDocuments,
     getDocumentById,
-    deleteDocument
+    getDocumentsByCandidateId,
+    deleteDocument,
+    updateDocument
 };

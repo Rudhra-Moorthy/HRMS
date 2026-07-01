@@ -1,6 +1,5 @@
-const pool = require('../../../config/db');
 
-const createResignation = async (resignation,client) => {
+const createResignation = async (client, resignation) => {
 
     const query = `
         INSERT INTO resignations
@@ -48,7 +47,7 @@ const getAllResignations = async (client) => {
 
 };
 
-const getResignationById = async (id,client) => {
+const getResignationById = async (client, id) => {
 
     const result = await client.query(
         `SELECT * FROM resignations WHERE id=$1`,
@@ -59,7 +58,7 @@ const getResignationById = async (id,client) => {
 
 };
 
-const updateResignation = async (id, resignation, client) => {
+const updateResignation = async (client, id, resignation) => {
 
     const query = `
         UPDATE resignations
@@ -93,7 +92,7 @@ const updateResignation = async (id, resignation, client) => {
 
 };
 
-const deleteResignation = async (id, client) => {
+const deleteResignation = async (client, id) => {
 
     const result = await client.query(
         `

@@ -4,6 +4,27 @@ const createCandidate = async (req, res) => {
 
     try {
 
+        const {
+            requirement_id,
+            full_name,
+            email,
+            status
+        } = req.body;
+
+        if (
+            !requirement_id ||
+            !full_name ||
+            !email ||
+            !status
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Required fields are missing"
+            });
+
+        }
+
         const data = await candidateService.createCandidate(req.body);
 
         return res.status(201).json({
@@ -22,7 +43,6 @@ const createCandidate = async (req, res) => {
     }
 
 };
-
 
 const getAllCandidates = async (req, res) => {
 
@@ -45,7 +65,6 @@ const getAllCandidates = async (req, res) => {
     }
 
 };
-
 
 const getCandidateById = async (req, res) => {
 
@@ -77,7 +96,6 @@ const getCandidateById = async (req, res) => {
     }
 
 };
-
 
 const updateCandidate = async (req, res) => {
 
@@ -113,7 +131,6 @@ const updateCandidate = async (req, res) => {
     }
 
 };
-
 
 const deleteCandidate = async (req, res) => {
 
