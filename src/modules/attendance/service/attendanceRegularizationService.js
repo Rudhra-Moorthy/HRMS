@@ -1,5 +1,6 @@
 const pool = require('../../../config/db');
 const repo = require('../repository/attendanceRegularizationRepo');
+const historyRepo = require('../repository/attendanceRegularizationHistoryRepo');
 
 const createRegularization = async (employeeId, dto) => {
 
@@ -40,6 +41,18 @@ const createRegularization = async (employeeId, dto) => {
         }
 
         const regularization = await repo.createRegularization(client, employeeId, dto);
+
+        /* Log History */
+        await historyRepo.logHistory(
+            client, 
+            regularization.regularization_id, 
+            employeeId, 
+            'SUBMITTED', 
+            employeeId, 
+            dto.reason, 
+            null, 
+            'PENDING'
+        );
 
         await client.query('COMMIT');
 d
@@ -104,6 +117,18 @@ const updateRegularization = async (id, employeeId, dto) => {
 
         const updated = await repo.updateRegularization(client, id, dto);
 
+        /* Log History */
+        await historyRepo.logHistory(
+            client, 
+            id, 
+            employeeId, 
+            'UPDATED', 
+            employeeId, 
+            dto.reason, 
+            'PENDING', 
+            'PENDING'
+        );
+
         await client.query('COMMIT');
 
         return updated;
@@ -158,6 +183,18 @@ const approveRegularization = async (regularizationId, managerId) => {
         /* Recalculate Attendance */
         attendance = await repo.recalculateAttendance(client, attendance.id);
 
+        /* Log History */
+        await historyRepo.logHistory(
+            client, 
+            regularizationId,
+            regularization.employee_id,
+            'APPROVED',
+            managerId,
+            'Attendance regularization has been approved',
+            'PENDING',
+            'APPROVED'
+        );
+
         await client.query('COMMIT');
 
         return attendance;
@@ -202,6 +239,18 @@ const rejectRegularization = async (regularizationId, managerId, rejectedReason)
         }
 
         const rejected = await repo.rejectRegularization(client, regularizationId, managerId, rejectedReason);
+
+        /* Log History */
+        await historyRepo.logHistory(
+            client, 
+            regularizationId, 
+            regularization.employee_id,
+            'REJECTED',
+            managerId,
+            rejectedReason,
+            'PENDING',
+            'REJECTED'
+        );
 
         await client.query('COMMIT');
 

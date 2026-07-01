@@ -97,10 +97,31 @@ const createEmployee = async (dto) => {
         */
         await employeeRepo.initializeLeaveAccrual(client, employee.id, policies);
 
-        /* 
-            10. Initialize Attendance
+        /*
+            10. Initialize Attendance Policy
         */
-        await employeeRepo.initializeAttendanceSummary(client, employee.id);
+        const attendancePolicy = await employeeRepo.getDefaultAttendancePolicy(client);
+        if(!attendancePolicy) {
+            const err = new Error('No activ attendance policy found');
+            err.statusCode = 400;
+            throw err;
+        }
+        await employeeRepo.assignAttendancePolicy(client, employee.id, attendancePolicy.policy_id);
+
+        /* 11. Initialize Shift */
+        const shift = await employeeRepo.getDepartmentDefaultShift(client, dto.departmentId);
+        if(!shift) {
+            const err = new Error('No default shift configured for department');
+            err.statusCode = 400;
+            throw err;
+        }
+        await employeeRepo.assignEmployeeShift(client, employee.id, shift.shift_id);
+
+        /* 12. Get Department Reporting Manager */
+        const reportingManager = await employeeRepo.getDepartmentReportingManager(client, dto.departmentId);
+        if(reportingManager) {
+            await employeeRepo.assignReportingManager(client, employee.id, reportingManager.manager_id);
+        }
 
         await client.query('COMMIT');
 

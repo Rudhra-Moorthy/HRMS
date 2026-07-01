@@ -216,6 +216,120 @@ const initializeLeaveAccruals = async (client, employeeId, policies) => {
 
 }
 
+/* Get default attendance policy */
+const getDefaultAttendancePolicy = async (client) => {
+
+    const query = `
+        SELECT id
+        FROM attendance_policies
+        WHERE is_active = TRUE
+        ORDER BY policy_id
+        LIMIT 1;
+    `;
+
+    const result = await client.query(query);
+
+    return result.rows[0];
+};
+
+/* Assign Attendance Policy */
+const assignAttendancePolicy = async (client, employeeId, attendancePolicyId) => {
+
+    const query = `
+        INSERT INTO employee_attendance_policy (
+            employee_id,
+            attendance_policy_id,
+            effective_from
+        )
+        VALUES ($1, $2, CURRENT_DATE)
+        RETURNING *;
+    `;
+    const values = [employeeId, attendancePolicyId];
+
+    const result = await client.query(query, values);
+    return result.rows[0];
+
+}
+
+/* Get Department Default shift */
+const getDepartmentDefaultShift = async (client, departmentId) => {
+
+    const query = `
+        SELECT 
+            ds.shift_id,
+            s.shift_name
+        FROM department_shifts ds
+        JOIN shifts s
+            ON ds.shift_id = s.shift_id
+        WHERE ds.department_id = $1 AND ds.is_default = TRUE
+        LIMIT 1;
+    `;
+    
+    const result = await client.query(query, [departmentId]);
+    return result.rows[0];
+
+}
+
+/* Assign Employee Shift */
+const assignEmployeeShift = async (client, employeeId, shiftId) => {
+
+    const query = `
+        INSERT INTO employee_shifts (
+            employee_id,
+            shift_id,
+            effective_from
+        ) 
+        VALUES ($1, $2, CURRENT_DATE)
+        RETURNING *;
+    `;
+
+    const result = await client.query(query, [employeeId, shiftId]);
+
+    return result.rows[0];
+}
+
+/* Get Reporting Manager */
+const getDepartmentReportingManager = async (client, departmentId) => {
+
+    const query = `
+        SELECT
+            manager_id
+        FROM department_reporting_managers
+        WHERE
+            department_id = $1
+            AND is_default = TRUE
+        LIMIT 1;
+    `;
+
+    const result = await client.query(query, [departmentId]);
+
+    return result.rows[0];
+    
+};
+
+/* Assign Reporting Manager */
+const assignReportingManager = async (client, employeeId, managerId) => {
+
+    const query = `
+        INSERT INTO employee_reporting_manager
+        (
+            employee_id,
+            manager_id,
+            effective_from
+        )
+        VALUES ($1, $2, CURRENT_DATE)
+        RETURNING *;
+    `;
+    const values = [
+        employeeId,
+        managerId
+    ];
+
+    const result = await client.query(query, values);
+    return result.rows[0];
+
+}
+
 // Get User by email
 const findUserByEmail = async (client, email) => {
 
@@ -556,6 +670,12 @@ module.exports = {
     getActiveLeavePoliciesByCategory,
     createEmployeeLeaveBalances,
     initializeLeaveAccruals,
+    getDefaultAttendancePolicy,
+    assignAttendancePolicy,
+    getDepartmentDefaultShift,
+    assignEmployeeShift,
+    getDepartmentReportingManager,
+    assignReportingManager,
     getEmployees,
     getEmployee,
     findUserByEmail,

@@ -185,6 +185,46 @@ CREATE TABLE leave_master (
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Employee reporting manager
+CREATE TABLE employee_reporting_manager
+(
+    id BIGSERIAL PRIMARY KEY,
+    employee_id BIGINT NOT NULL REFERENCES employees(id),
+    manager_id BIGINT NOT NULL REFERENCES employees(id),
+    effective_from DATE NOT NULL,
+    effective_to DATE,
+	is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+	deleted_at TIMESTAMP
+);
+
+CREATE TABLE department_shifts
+(
+    id BIGSERIAL PRIMARY KEY,
+    department_id BIGINT NOT NULL
+        REFERENCES departments(id),
+    shift_id BIGINT NOT NULL
+        REFERENCES shifts(shift_id),
+    is_default BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE department_reporting_managers
+(
+    id BIGSERIAL PRIMARY KEY,
+
+    department_id BIGINT NOT NULL
+        REFERENCES departments(id),
+
+    manager_id BIGINT NOT NULL
+        REFERENCES employees(id),
+
+    is_default BOOLEAN DEFAULT TRUE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 INSERT INTO leave_master
 (leave_code, leave_name, description)
 VALUES
@@ -585,9 +625,9 @@ CREATE TABLE attendances(
 	CONSTRAINT fk_shift FOREIGN KEY(shift_id) REFERENCES shifts(shift_id)
 );
 
--- Attendance Regularisations
-CREATE TABLE attendance_regularisations (
-	regularisation_id BIGSERIAL PRIMARY KEY,
+-- Attendance Regularizations
+CREATE TABLE attendance_regularizations (
+	regularization_id BIGSERIAL PRIMARY KEY,
 	attendance_id BIGINT REFERENCES attendances(id),
 	employee_id BIGINT REFERENCES employees(id),
 	regularisation_date DATE,
@@ -605,3 +645,29 @@ CREATE TABLE attendance_regularisations (
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP
 );
+
+-- Attendance regularization history
+CREATE TABLE attendance_regularization_history (
+	history_id BIGSERIAL PRIMARY KEY,
+	regularization_id BIGINT NOT NULL,
+	employee_id BIGINT NOT NULL,
+	action VARCHAR(30) NOT NULL CHECK(action IN ('SUBMITTED', 'UPDATED', 'APPROVED', 'REJECTED', 'DELETED')),
+	action_by BIGINT NOT NULL,
+	remark TEXT,
+	old_status VARCHAR(30),
+	new_status VARCHAR(30),
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT fk_regularization FOREIGN KEY(regularization_id) REFERENCES attendance_regularizations(regularization_id) ON DELETE CASCADE,
+	CONSTRAINT fk_empoyee FOREIGN KEY(employee_id) REFERENCES employees(id),
+	CONSTRAINT fk_action_by FOREIGN KEY(action_by) REFERENCES employees(id)
+);
+
+CREATE INDEX idx_arh_regularization
+ON attendance_regularization_history(regularization_id);
+
+CREATE INDEX idx_arh_employee
+ON attendance_regularization_history(employee_id);
+
+CREATE INDEX idx_arh_action
+ON attendance_regularization_history(action);
+
