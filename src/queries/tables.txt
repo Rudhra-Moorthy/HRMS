@@ -79,7 +79,6 @@ CREATE TABLE employees(
 	CONSTRAINT fk_dept FOREIGN KEY(dept_id) REFERENCES departments(id) ON DELETE CASCADE,
 	CONSTRAINT fk_desg FOREIGN KEY(desg_id) REFERENCES designations(id) ON DELETE CASCADE,
 	CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-	CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT fk_emp_category FOREIGN KEY(employment_category_id) REFERENCES employment_categories(id) ON DELETE CASCADE
 );
 
@@ -397,7 +396,6 @@ CREATE TABLE resignations(
 CREATE TABLE time_tracker(
     id BIGSERIAL PRIMARY KEY,
     employee_id BIGINT NOT NULL,
-    attendance_id BIGINT,
     project_name VARCHAR(255),
     task_name VARCHAR(255),
     description TEXT,
@@ -409,12 +407,9 @@ CREATE TABLE time_tracker(
     CONSTRAINT fk_employee
         FOREIGN KEY(employee_id)
         REFERENCES employees(id)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_attendance
-        FOREIGN KEY(attendance_id)
-        REFERENCES attendances(id)
         ON DELETE CASCADE
 );
+
 INSERT INTO leave_policy
 (
     leave_id,
@@ -823,4 +818,144 @@ ON attendance_regularization_history(employee_id);
 
 CREATE INDEX idx_arh_action
 ON attendance_regularization_history(action);
+
+
+
+-- Roles permissions
+
+INSERT INTO permissions (name)
+VALUES
+('employee.create'),('employee.update'), ('employee.view'), ('employee.delete'),
+('employee.assert.create'),('employee.assert.update'),('employee.assert.view'),('employee.assert.delete'),
+('attendance.create'), ('attendance.view'), ('attendance.delete'), ('attendance.update'),
+('attendance.regularization.history.create'), ('attendance.regularization.history.view'),
+('regularization.create'), ('regularization.view'), ('regularization.update'), ('attendance.regularization.approve'), ('attendance.regularization.reject'),
+('attendance.report.summary'), ('attendance.report.export'), ('attendance.report.view'),
+('announcement.create'), ('announcement.view'), ('announcement.update'), ('announcement.delete'),
+('candidate.create'), ('candidate.view'), ('candidate.update'), ('candidate.delete'),
+('interview.create'), ('interview.update'), ('interview.view'), ('interview.delete'),
+('requirement.create'), ('requirement.view'), ('requirement.update'), ('requirement.delete'),
+('resignation.create'), ('resignation.view'), ('resignation.update'), ('resignation.delete'),
+('timeTracker.view'), ('timeTracker.create'), ('timeTracker.update'), ('timeTracker.delete');
+
+INSERT INTO role_permissions(role_id, permission_id) 
+SELECT r.id, p.id
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.name = 'Admin';
+
+INSERT INTO role_permissions(role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r
+JOIN permissions p
+	ON p.name IN (
+	-- Employee
+    'employee.create',
+    'employee.update',
+    'employee.view',
+
+    -- Employee Assets
+    'employee.assert.create',
+    'employee.assert.update',
+    'employee.assert.view',
+    'employee.assert.delete',
+
+    -- Attendance
+    'attendance.create',
+    'attendance.view',
+    'attendance.update',
+
+    -- Attendance Regularization
+    'regularization.view',
+    'attendance.regularization.approve',
+    'attendance.regularization.reject',
+    'attendance.regularization.history.view',
+
+    -- Attendance Reports
+    'attendance.report.view',
+    'attendance.report.summary',
+    'attendance.report.export',
+
+    -- Announcements
+    'announcement.create',
+    'announcement.view',
+    'announcement.update',
+    'announcement.delete',
+
+    -- Requirements
+    'requirement.create',
+    'requirement.view',
+    'requirement.update',
+    'requirement.delete',
+
+    -- Candidates
+    'candidate.create',
+    'candidate.view',
+    'candidate.update',
+    'candidate.delete',
+
+    -- Interviews
+    'interview.create',
+    'interview.view',
+    'interview.update',
+    'interview.delete',
+
+    -- Resignations
+    'resignation.view',
+    'resignation.update',
+    'resignation.delete',
+
+    -- Time Tracker
+    'timeTracker.view'
+
+)
+WHERE r.name = 'HR Manager';
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT
+    r.id,
+    p.id
+FROM roles r
+JOIN permissions p
+ON p.name IN (
+
+    -- Employee Profile
+    'employee.view',
+
+    -- Employee Assets
+    'employee.assert.view',
+
+    -- Attendance
+    'attendance.create',
+    'attendance.view',
+    'attendance.update',
+
+    -- Attendance Regularization
+    'regularization.create',
+    'regularization.view',
+    'regularization.update',
+    'attendance.regularization.history.view',
+
+    -- Attendance Report
+    'attendance.report.view',
+
+    -- Announcements
+    'announcement.view',
+
+    -- Resignation
+    'resignation.create',
+    'resignation.view',
+    'resignation.update',
+
+    -- Time Tracker
+    'timeTracker.create',
+    'timeTracker.view',
+    'timeTracker.update',
+    'timeTracker.delete'
+
+)
+WHERE r.name = 'Employee';
+
+
+
 

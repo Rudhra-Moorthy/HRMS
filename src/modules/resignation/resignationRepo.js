@@ -8,25 +8,19 @@ const createResignation = async (client, resignation) => {
             resignation_date,
             last_working_day,
             reason,
-            status,
-            approved_by,
-            approved_at,
-            remarks
+            additional_details
         )
         VALUES
-        ($1,$2,$3,$4,$5,$6,$7,$8)
+        ($1,$2,$3,$4,$5)
         RETURNING *;
     `;
 
     const values = [
-        resignation.employee_id,
-        resignation.resignation_date,
-        resignation.last_working_day,
+        resignation.employeeId,
+        resignation.resignationDate,
+        resignation.lastWorkingDay,
         resignation.reason,
-        resignation.status,
-        resignation.approved_by,
-        resignation.approved_at,
-        resignation.remarks
+        resignation.additionalDetails
     ];
 
     const result = await client.query(query, values);
@@ -63,25 +57,18 @@ const updateResignation = async (client, id, resignation) => {
     const query = `
         UPDATE resignations
         SET
-            resignation_date=$1,
-            last_working_day=$2,
-            reason=$3,
-            status=$4,
-            approved_by=$5,
-            approved_at=$6,
-            remarks=$7,
+            status=$1,
+            approved_by=$2,
+            approved_at=NOW(),
+            remarks=$3,
             updated_at=NOW()
         WHERE id=$8
         RETURNING *;
     `;
 
     const values = [
-        resignation.resignation_date,
-        resignation.last_working_day,
-        resignation.reason,
         resignation.status,
-        resignation.approved_by,
-        resignation.approved_at,
+        resignation.approvedBy,
         resignation.remarks,
         id
     ];

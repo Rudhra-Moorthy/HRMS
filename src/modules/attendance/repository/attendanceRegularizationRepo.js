@@ -61,7 +61,7 @@ const getRegularizations = async (pool, filters) => {
         SELECT 
             ar.*,
             e.full_name,
-            a.attendance_date,
+            a.attendance_date
         FROM attendance_regularizations ar
         JOIN employees e
             ON ar.employee_id = e.id
@@ -110,7 +110,7 @@ const updateRegularization = async (client, id, dto) => {
             requested_check_in = $2,
             requested_check_out = $3,
             reason = $4,
-            updated_at = NOW(),
+            updated_at = NOW()
         WHERE regularization_id = $5
         RETURNING *;
     `;

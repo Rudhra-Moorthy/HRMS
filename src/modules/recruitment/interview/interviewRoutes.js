@@ -2,7 +2,7 @@
 
     const router = express.Router();
 
-    const interviewController = require('./controller/interviewController');
+    const interviewController = require('./interviewController');
 
     const authenticate = require('../../../middlewares/authenticate');
     const authorize = require('../../../middlewares/authorize');

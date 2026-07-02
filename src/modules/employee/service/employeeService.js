@@ -90,7 +90,7 @@ const createEmployee = async (dto) => {
         /* 
             8. Create Employee leave balance 
         */
-        await employeeRepo.createEmployeeLeaveBalance(client, employee.id, policies);
+        await employeeRepo.createEmployeeLeaveBalances(client, employee.id, policies);
 
         /*
             9. Initialize leave accrual records 

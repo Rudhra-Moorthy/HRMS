@@ -1,32 +1,35 @@
-const resignationService = require('../service/resignationService');
+const candidateService = require('./candidateService');
 
-const createResignation = async (req, res) => {
+const createCandidate = async (req, res) => {
+
     try {
 
         const {
-            employee_id,
-            resignation_date,
-            last_working_day,
-            reason
+            requirementId,
+            fullName,
+            email,
+            phoneNumber
         } = req.body;
 
         if (
-            !employee_id ||
-            !resignation_date ||
-            !last_working_day ||
-            !reason
+            !requirementId ||
+            !fullName ||
+            !email ||
+            !phoneNumber
         ) {
+
             return res.status(400).json({
                 success: false,
                 message: "Required fields are missing"
             });
+
         }
 
-        const data = await resignationService.createResignation(req.body);
+        const data = await candidateService.createCandidate(req.body);
 
         return res.status(201).json({
             success: true,
-            message: "Resignation submitted successfully",
+            message: "Candidate created successfully",
             data
         });
 
@@ -38,12 +41,14 @@ const createResignation = async (req, res) => {
         });
 
     }
+
 };
 
-const getAllResignations = async (req, res) => {
+const getAllCandidates = async (req, res) => {
+
     try {
 
-        const data = await resignationService.getAllResignations();
+        const data = await candidateService.getAllCandidates();
 
         return res.status(200).json({
             success: true,
@@ -58,18 +63,22 @@ const getAllResignations = async (req, res) => {
         });
 
     }
+
 };
 
-const getResignationById = async (req, res) => {
+const getCandidateById = async (req, res) => {
+
     try {
 
-        const data = await resignationService.getResignationById(req.params.id);
+        const data = await candidateService.getCandidateById(req.params.id);
 
         if (!data) {
+
             return res.status(404).json({
                 success: false,
-                message: "Resignation not found"
+                message: "Candidate not found"
             });
+
         }
 
         return res.status(200).json({
@@ -85,26 +94,30 @@ const getResignationById = async (req, res) => {
         });
 
     }
+
 };
 
-const updateResignation = async (req, res) => {
+const updateCandidate = async (req, res) => {
+
     try {
 
-        const data = await resignationService.updateResignation(
+        const data = await candidateService.updateCandidate(
             req.params.id,
             req.body
         );
 
         if (!data) {
+
             return res.status(404).json({
                 success: false,
-                message: "Resignation not found"
+                message: "Candidate not found"
             });
+
         }
 
         return res.status(200).json({
             success: true,
-            message: "Resignation updated successfully",
+            message: "Candidate updated successfully",
             data
         });
 
@@ -116,23 +129,27 @@ const updateResignation = async (req, res) => {
         });
 
     }
+
 };
 
-const deleteResignation = async (req, res) => {
+const deleteCandidate = async (req, res) => {
+
     try {
 
-        const data = await resignationService.deleteResignation(req.params.id);
+        const data = await candidateService.deleteCandidate(req.params.id);
 
         if (!data) {
+
             return res.status(404).json({
                 success: false,
-                message: "Resignation not found"
+                message: "Candidate not found"
             });
+
         }
 
         return res.status(200).json({
             success: true,
-            message: "Resignation deleted successfully"
+            message: "Candidate deleted successfully"
         });
 
     } catch (err) {
@@ -143,12 +160,13 @@ const deleteResignation = async (req, res) => {
         });
 
     }
+
 };
 
 module.exports = {
-    createResignation,
-    getAllResignations,
-    getResignationById,
-    updateResignation,
-    deleteResignation
+    createCandidate,
+    getAllCandidates,
+    getCandidateById,
+    updateCandidate,
+    deleteCandidate
 };

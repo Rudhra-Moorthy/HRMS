@@ -11,7 +11,7 @@ const generateToken = (payload) => {
         }, 
         jwtConfig.accessTokenSecret,
         {
-            expriesIn: jwtConfig.accessTokenLife
+            expiresIn: jwtConfig.accessTokenLife
         }
     );
 

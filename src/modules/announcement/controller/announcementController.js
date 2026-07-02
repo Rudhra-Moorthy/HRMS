@@ -6,17 +6,17 @@ const createAnnouncement = async (req, res) => {
         const {
             title,
             category,
-            target_audience,
+            targetAudience,
             message,
-            created_by
+            createdBy
         } = req.body;
 
         if (
             !title ||
             !category ||
-            !target_audience ||
+            !targetAudience ||
             !message ||
-            !created_by
+            !createdBy
         ) {
             return res.status(400).json({
                 success: false,

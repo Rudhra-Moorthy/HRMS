@@ -10,23 +10,21 @@ const createRequirement = async (client, requirement) => {
             vacancies,
             experience_required,
             job_description,
-            priority,
-            status
+            priority
         )
         VALUES
-        ($1,$2,$3,$4,$5,$6,$7,$8)
+        ($1,$2,$3,$4,$5,$6,$7)
         RETURNING *;
     `;
 
     const values = [
-        requirement.requirement_code,
+        requirement.requirementCode,
         requirement.position,
-        requirement.dept_id,
+        requirement.departmentId,
         requirement.vacancies,
-        requirement.experience_required,
-        requirement.job_description,
-        requirement.priority,
-        requirement.status
+        requirement.experienceRequired,
+        requirement.jobDescription,
+        requirement.priority
     ];
 
     const result = await client.query(query, values);
@@ -54,7 +52,7 @@ const getRequirementById = async (client, id) => {
     const query = `
         SELECT *
         FROM requirements
-        WHERE id=$1
+        WHERE id = $1 AND deleted_at IS NULL
     `;
 
     const result = await client.query(query, [id]);
@@ -100,8 +98,11 @@ const updateRequirement = async (client, id, requirement) => {
 const deleteRequirement = async (client, id) => {
 
     const query = `
-        DELETE FROM requirements
-        WHERE id=$1
+        UPDATE requirements
+        SET 
+            status = 'CLOSED',
+            deleted_at = CURRENT_TIMESTAMP
+        WHERE id = $1
         RETURNING *
     `;
 

@@ -12,8 +12,7 @@ const requirementDto = (requirement) => {
         jobDescription: requirement.job_description,
         priority: requirement.priority,
         status: requirement.status,
-        createdAt: requirement.created_at,
-        updatedAt: requirement.updated_at
+        postedDate: requirement.created_at.toISOString().split('T')[0]
     };
 };
 

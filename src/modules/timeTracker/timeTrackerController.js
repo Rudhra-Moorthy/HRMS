@@ -1,21 +1,21 @@
-const timeTrackerService = require('../service/timeTrackerService');
+const timeTrackerService = require('./timeTrackerService');
 
 const createTimeEntry = async (req, res) => {
 
     try {
 
         const {
-            employee_id,
-            project_name,
-            task_name,
-            start_time
+            employeeId,
+            projectName,
+            taskName,
+            startTime
         } = req.body;
 
         if (
-            !employee_id ||
-            !project_name ||
-            !task_name ||
-            !start_time
+            !employeeId ||
+            !projectName ||
+            !taskName ||
+            !startTime
         ) {
 
             return res.status(400).json({

@@ -1,4 +1,4 @@
-const documentService = require('../service/candidateDocumentService');
+const documentService = require('./candidateDocumentService');
 
 const createDocument = async (req, res) => {
 

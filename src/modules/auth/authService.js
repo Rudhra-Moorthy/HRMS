@@ -18,7 +18,13 @@ const login = async (credentails) => {
 
     if(!isValid) {
         const err = new Error('Invalid Credentials');
-        err.statusCode(401);
+        err.statusCode = 401;
+        throw err;
+    }
+
+    if(credentails.role !== user.role) {
+        const err = new Error('Please choose your role');
+        err.statusCode = 401;
         throw err;
     }
 

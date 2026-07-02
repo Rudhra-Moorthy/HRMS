@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 
-const documentController = require('./controller/candidateDocumentController');
+const documentController = require('./candidateDocumentController');
 
 const authenticate = require('../../../middlewares/authenticate');
 const authorize = require('../../../middlewares/authorize');

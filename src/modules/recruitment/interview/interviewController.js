@@ -1,4 +1,4 @@
-const interviewService = require('../service/interviewService');
+const interviewService = require('./interviewService');
 
 const createInterview = async (req, res) => {
 

@@ -31,26 +31,13 @@ const createRequirement = async (body) => {
 
 const getAllRequirements = async () => {
 
-    const client = await pool.connect();
-
     try {
 
-        await client.query('BEGIN');
-
-        const requirements = await requirementRepo.getAllRequirements(client);
-
-        await client.query('COMMIT');
-
+        const requirements = await requirementRepo.getAllRequirements(pool);
         return requirements.map(requirementDto);
 
     } catch (err) {
-
-        await client.query('ROLLBACK');
         throw err;
-
-    } finally {
-
-        client.release();
 
     }
 
@@ -58,27 +45,13 @@ const getAllRequirements = async () => {
 
 const getRequirementById = async (id) => {
 
-    const client = await pool.connect();
-
     try {
 
-        await client.query('BEGIN');
-
-        const requirement = await requirementRepo.getRequirementById(client, id);
-
-        await client.query('COMMIT');
-
+        const requirement = await requirementRepo.getRequirementById(pool, id);
         return requirementDto(requirement);
 
     } catch (err) {
-
-        await client.query('ROLLBACK');
         throw err;
-
-    } finally {
-
-        client.release();
-
     }
 
 };

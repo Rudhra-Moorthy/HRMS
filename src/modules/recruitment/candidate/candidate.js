@@ -16,8 +16,6 @@ const candidateDto = (candidate) => {
         skills: candidate.skills,
         resumeUrl: candidate.resume_url,
         status: candidate.status,
-        createdAt: candidate.created_at,
-        updatedAt: candidate.updated_at
     };
 
 };

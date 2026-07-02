@@ -27,9 +27,47 @@ const createEmployee = async (req, res) => {
 
 const getEmployees = async (req, res) => {
 
+    try {
+
+        const result = await employeeService.getEmployees(req.query);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Employees have been fetched successfully',
+            data: result
+        });
+
+    } catch (err) {
+
+        return res.status(err.statusCode || 500).json({
+            success: false,
+            message: err.message
+        });
+
+    }
+
 }
 
 const getEmployee = async (req, res) => {
+
+    try {
+
+        const result = await employeeService.getEmployee(req.params.id);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Employee has been fetched successfully',
+            data: result
+        });
+
+    } catch (err) {
+
+        return res.status(err.statusCode || 500).json({
+            success: false,
+            message: err.message
+        });
+
+    }
 
 }
 

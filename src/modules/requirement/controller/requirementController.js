@@ -4,25 +4,23 @@ const createRequirement = async (req, res) => {
     try {
 
         const {
-            requirement_code,
+            requirementCode,
             position,
-            dept_id,
+            departmentId,
             vacancies,
-            experience_required,
-            job_description,
-            priority,
-            status
+            experienceRequired,
+            jobDescription,
+            priority
         } = req.body;
 
         if (
-            !requirement_code ||
+            !requirementCode ||
             !position ||
-            !dept_id ||
+            !departmentId ||
             !vacancies ||
-            !experience_required ||
-            !job_description ||
-            !priority ||
-            !status
+            !experienceRequired ||
+            !jobDescription ||
+            !priority
         ) {
             return res.status(400).json({
                 success: false,
@@ -96,7 +94,15 @@ const getRequirementById = async (req, res) => {
 };
 
 const updateRequirement = async (req, res) => {
+    
     try {
+
+        if(Object.keys(req.body).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Atleast one field is required'
+            });
+        }
 
         const data = await requirementService.updateRequirement(
             req.params.id,

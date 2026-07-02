@@ -14,23 +14,15 @@ const attendanceRegularizationHistoryRoutes = require('./attendance/routes/atten
 const attendanceReportRoutes = require('./attendance/routes/attendanceReportRoutes');
 
 router.use('/auth', authRoutes);
-
 router.use('/employees', employeeRoutes);
 router.use('/attendances', attendanceRoutes);
 router.use('/attendance-regularizations', attendanceRegularizationRoutes);
 router.use('/attendance-regularizations-history', attendanceRegularizationHistoryRoutes);
 router.use('/attendance-report', attendanceReportRoutes);
-
 router.use('/requirements', requirementRoutes);
-
-router.use('/recruitment', recruitmentRoutes);
-
+router.use('/recruitments', recruitmentRoutes);
 router.use('/announcements', announcementRoutes);
-
 router.use('/resignations', resignationRoutes);
-
-router.use('/attendance', attendanceRoutes);
-
 router.use('/time-tracker', timeTrackerRoutes);
 
 module.exports = router;

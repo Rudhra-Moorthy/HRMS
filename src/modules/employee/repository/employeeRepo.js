@@ -56,7 +56,7 @@ const createAddress = async (client, employeeId, address) => {
 
     const query = `
         INSERT INTO employee_addresses(
-            employee_id,
+            emp_id,
             address_line_1, 
             address_line_2,
             city,
@@ -69,12 +69,12 @@ const createAddress = async (client, employeeId, address) => {
 
     const values = [
         employeeId, 
-        address.address_line_1, 
-        address.address_line_2, 
+        address.addressLine1 || '', 
+        address.addressLine2 | '', 
         address.city, 
         address.state, 
         address.country, 
-        address.postal_code
+        address.postalCode
     ];
 
     await client.query(query, values);
@@ -85,8 +85,8 @@ const createAddress = async (client, employeeId, address) => {
 const createSalary = async (client, employeeId, salary) => {
 
     const query = `
-        INSERT INTO salary_structure (
-            emp_id,
+        INSERT INTO employee_salary_structures (
+            employee_id,
             basic_pay,
             hra,
             medical,
@@ -95,7 +95,7 @@ const createSalary = async (client, employeeId, salary) => {
             advance_bonus,
             company_pf,
             aplc,
-            provident_fund_employee,
+            provident_fund,
             esi,
             professional_tax,
             total_ctc,
@@ -220,7 +220,7 @@ const initializeLeaveAccruals = async (client, employeeId, policies) => {
 const getDefaultAttendancePolicy = async (client) => {
 
     const query = `
-        SELECT id
+        SELECT poicly_id
         FROM attendance_policies
         WHERE is_active = TRUE
         ORDER BY policy_id
@@ -345,7 +345,7 @@ const getEmployees = async (client) => {
     const query = `
         SELECT 
             e.id,
-            e.employee_code,
+            e.emp_code,
             e.full_name,
             e.email,
             e.phone,
@@ -362,7 +362,7 @@ const getEmployees = async (client) => {
             s.advance_bonus,
             s.company_pf,
             s.aplc,
-            s.provident_fund_employee,
+            s.provident_fund,
             s.esi,
             s.professional_tax,
             s.total_ctc,
@@ -380,10 +380,10 @@ const getEmployees = async (client) => {
             ON e.dept_id = d.id
         JOIN designations ds
             ON e.desg_id = ds.id
-        JOIN salary_structure s
-            ON e.id = s.emp_id
+        JOIN employee_salary_structures s
+            ON e.id = s.employee_id
         JOIN employee_addresses ea
-            ON e.id = ea.employee_id
+            ON e.id = ea.emp_id
         WHERE e.deleted_at IS NULL;
     `;
 

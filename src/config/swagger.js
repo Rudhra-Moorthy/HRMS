@@ -5,14 +5,14 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "HR Management System",
+      title: "Human Resource Management System",
       version: "1.0.0",
       description: "API documentation for the HR Management System",
     },
 
     servers: [
       {
-        url: "http://localhost:3000",
+        url: "http://localhost:5000/api",
       },
     ],
 
@@ -34,7 +34,7 @@ const options = {
 
     
   },
-  apis: ["./src/routes/*.js"],
+  apis: ["./src/modules/**/*.js"],
 };
 
 const specs = swaggerJsDoc(options);

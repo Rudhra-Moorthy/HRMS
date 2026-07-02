@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const timeTrackerController = require('./controller/timeTrackerController');
+const timeTrackerController = require('./timeTrackerController');
 
 const authenticate = require('../../middlewares/authenticate');
 const authorize = require('../../middlewares/authorize');

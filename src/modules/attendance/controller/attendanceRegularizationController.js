@@ -103,7 +103,7 @@ const approveRegularization = async (req, res) => {
 
     } catch (err) {
 
-        return req.status(err.statusCode || 500).json({
+        return res.status(err.statusCode || 500).json({
             success: false,
             message: err.message
         });
@@ -119,7 +119,7 @@ const rejectRegularization = async (req, res) => {
 
         const rejected = await service.rejectRegularization(req.params.id, req.user.employeeId, req.body.reason);
 
-        return res.status().json({
+        return res.status(200).json({
             success: true,
             message: 'Attendance regularization has been rejected successfully.',
             data: rejected
@@ -127,7 +127,7 @@ const rejectRegularization = async (req, res) => {
         
     } catch (err) {
 
-        return req.status(err.statusCode || 500).json({
+        return res.status(err.statusCode || 500).json({
             success: false,
             message: err.message
         });

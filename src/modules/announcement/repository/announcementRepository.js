@@ -17,9 +17,9 @@ const createAnnouncement = async (client,announcement) => {
     const values = [
         announcement.title,
         announcement.category,
-        announcement.target_audience,
+        announcement.targetAudience,
         announcement.message,
-        announcement.created_by
+        announcement.createdBy
     ];
 
     const result = await client.query(query, values);
@@ -70,7 +70,7 @@ const updateAnnouncement = async (client, id, announcement) => {
     const values = [
         announcement.title,
         announcement.category,
-        announcement.target_audience,
+        announcement.targetAudience,
         announcement.message,
         id
     ];

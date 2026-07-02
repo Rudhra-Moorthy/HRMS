@@ -23,17 +23,17 @@ const createCandidate = async (client, candidate) => {
     `;
 
     const values = [
-        candidate.requirement_id,
-        candidate.full_name,
+        candidate.requirementId,
+        candidate.fullName,
         candidate.email,
-        candidate.phone,
+        candidate.phoneNumber,
         candidate.experience,
-        candidate.current_company,
-        candidate.current_ctc,
-        candidate.expected_ctc,
-        candidate.notice_period,
+        candidate.currentCompany,
+        candidate.currentCtc,
+        candidate.expectedCtc,
+        candidate.noticePeriod,
         candidate.skills,
-        candidate.resume_url,
+        candidate.resumeUrl,
         candidate.status
     ];
 

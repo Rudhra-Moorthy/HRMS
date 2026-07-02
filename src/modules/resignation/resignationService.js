@@ -1,6 +1,6 @@
-const pool = require('../../../config/db');
-const resignationRepo = require('../repository/resignationRepo');
-const resignationDto = require('../ dto/resignationDto');
+const pool = require('../../config/db');
+const resignationRepo = require('./resignationRepo');
+const resignationDto = require('./resignationDto');
 
 const createResignation = async (body) => {
     const client = await pool.connect();
@@ -18,32 +18,22 @@ const createResignation = async (body) => {
 };
 
 const getAllResignations = async () => {
-    const client = await pool.connect();
+    
     try {
-        await client.query('BEGIN');
-        const resignations = await resignationRepo.getAllResignations(client);
-        await client.query('COMMIT');
+        const resignations = await resignationRepo.getAllResignations(pool);
         return resignations.map(resignationDto);
     } catch (error) {
-        await client.query('ROLLBACK');
         throw error;
-    } finally {
-        client.release();
-    }
+    } 
 };
 
 const getResignationById = async (id) => {
-    const client = await pool.connect();
+
     try {
-        await client.query('BEGIN');
         const resignation = await resignationRepo.getResignationById(client, id);
-        await client.query('COMMIT');
         return resignationDto(resignation);
     } catch (error) {
-        await client.query('ROLLBACK');
         throw error;
-    } finally {
-        client.release();
     }
 };
 

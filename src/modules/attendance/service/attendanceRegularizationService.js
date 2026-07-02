@@ -55,7 +55,7 @@ const createRegularization = async (employeeId, dto) => {
         );
 
         await client.query('COMMIT');
-d
+
         return regularization;
  
     } catch (err) {

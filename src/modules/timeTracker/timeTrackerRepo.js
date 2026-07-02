@@ -4,28 +4,22 @@ const createTimeEntry = async (client,timeEntry) => {
         INSERT INTO time_tracker
         (
             employee_id,
-            attendance_id,
             project_name,
             task_name,
             description,
-            start_time,
-            end_time,
-            total_hours
+            start_time
         )
         VALUES
-        ($1,$2,$3,$4,$5,$6,$7,$8)
+        ($1,$2,$3,$4,$5)
         RETURNING *;
     `;
 
     const values = [
         timeEntry.employee_id,
-        timeEntry.attendance_id,
-        timeEntry.project_name,
-        timeEntry.task_name,
+        timeEntry.projectName,
+        timeEntry.taskName,
         timeEntry.description,
-        timeEntry.start_time,
-        timeEntry.end_time,
-        timeEntry.total_hours
+        timeEntry.startTime
     ];
 
     const result = await client.query(query, values);
@@ -64,22 +58,14 @@ const updateTimeEntry = async (client, id, timeEntry) => {
     const query = `
         UPDATE time_tracker
         SET
-            project_name = $1,
-            task_name = $2,
-            description = $3,
-            start_time = $4,
-            end_time = $5,
-            total_hours = $6,
+            end_time = $2,
+            total_hours = $3,
             updated_at = NOW()
-        WHERE id = $7
+        WHERE id = $4
         RETURNING *;
     `;
 
     const values = [
-        timeEntry.project_name,
-        timeEntry.task_name,
-        timeEntry.description,
-        timeEntry.start_time,
         timeEntry.end_time,
         timeEntry.total_hours,
         id

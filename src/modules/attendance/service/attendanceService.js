@@ -180,7 +180,7 @@ const calculateAttendance = (checkIn, checkOut, shift, policy) => {
 
     const totalHours = (checkOut - new Date(checkIn)) / (1000 * 60 * 60);
 
-    const shiftEnd = new Date(`${chechOut.toISOString().substring(0, 10)}T${shift.end_time}`);
+    const shiftEnd = new Date(`${checkOut.toISOString().substring(0, 10)}T${shift.end_time}`);
 
     const overTime = Math.max(0, (checkOut - shiftEnd) / (1000 * 60 * 60));
 

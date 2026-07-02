@@ -32,57 +32,26 @@ const createAnnouncement = async (body) => {
 
 const getAllAnnouncements = async () => {
 
-    const client = await pool.connect();
-
     try {
 
-        await client.query('BEGIN');
-
-        const announcements = await announcementRepo.getAllAnnouncements(client);
-
-        await client.query('COMMIT');
+        const announcements = await announcementRepo.getAllAnnouncements(pool);
 
         return announcements.map(announcementDto);
 
     } catch (err) {
-
-        await client.query('ROLLBACK');
-
         throw err;
-
-    } finally {
-
-        client.release();
-
-    }
+    } 
 
 };
 
 const getAnnouncementById = async (id) => {
 
-    const client = await pool.connect();
-
     try {
-
-        await client.query('BEGIN');
-
-        const announcement = await announcementRepo.getAnnouncementById(client, id);
-
-        await client.query('COMMIT');
-
+        const announcement = await announcementRepo.getAnnouncementById(pool, id);
         return announcementDto(announcement);
-
     } catch (err) {
-
-        await client.query('ROLLBACK');
-
         throw err;
-
-    } finally {
-
-        client.release();
-
-    }
+    } 
 
 };
 
