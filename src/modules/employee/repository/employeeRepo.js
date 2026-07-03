@@ -3,7 +3,7 @@ const createEmployee = async(client, employee) => {
 
     const query = `
         INSERT INTO employees(
-            employee_code, 
+            emp_code, 
             user_id,
             full_name, 
             email,
@@ -70,7 +70,7 @@ const createAddress = async (client, employeeId, address) => {
     const values = [
         employeeId, 
         address.addressLine1 || '', 
-        address.addressLine2 | '', 
+        address.addressLine2 || '', 
         address.city, 
         address.state, 
         address.country, 
@@ -220,7 +220,7 @@ const initializeLeaveAccruals = async (client, employeeId, policies) => {
 const getDefaultAttendancePolicy = async (client) => {
 
     const query = `
-        SELECT poicly_id
+        SELECT policy_id
         FROM attendance_policies
         WHERE is_active = TRUE
         ORDER BY policy_id
@@ -398,7 +398,7 @@ const getEmployee = async (client, id) => {
     const query = `
         SELECT 
             e.id,
-            e.employee_code,
+            e.emp_code,
             e.full_name,
             e.email,
             e.phone,
@@ -415,7 +415,7 @@ const getEmployee = async (client, id) => {
             s.advance_bonus,
             s.company_pf,
             s.aplc,
-            s.provident_fund_employee,
+            s.provident_fund,
             s.esi,
             s.professional_tax,
             s.total_ctc,
@@ -433,10 +433,10 @@ const getEmployee = async (client, id) => {
             ON e.dept_id = d.id
         JOIN designations ds
             ON e.desg_id = ds.id
-        JOIN salary_structure s
-            ON e.id = s.emp_id
+        JOIN employee_salary_structures s
+            ON e.id = s.employee_id
         JOIN employee_addresses ea
-            ON e.id = ea.employee_id
+            ON e.id = ea.emp_id
         WHERE e.id = $1 AND e.deleted_at IS NULL;
     `;
 
@@ -537,7 +537,7 @@ const updateAddress = async (client, employeeId, address) => {
     const query = `
         UPDATE employee_addresses
         SET ${fields.join(', ')}
-        WHERE employee_id = $${idx}
+        WHERE emp_id = $${idx}
     `;
 
     await client.query(query, values);
@@ -586,7 +586,7 @@ const updateSalary = async (client, employeeId, salary) => {
     values.push(employeeId);
 
     const query = `
-        UPDATE salary_structure
+        UPDATE employee_salary_structures
         SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP
         WHERE employee_id = $${idx}
     `;
@@ -604,10 +604,9 @@ const updateSalary = async (client, employeeId, salary) => {
 const closeCurrentLeaveBalances = async (client, employeeId) => {
 
     const query = `
-        UPDATE employee_leave_balance
+        UPDATE employee_leave_balances
         SET
-            effective_to = CURRENT_DATE - INTERVAL '1 day',
-            updated_at = NOW()
+            effective_to = CURRENT_DATE - INTERVAL '1 day'
         WHERE employee_id = $1 AND effective_to IS NULL;
     `;
 
@@ -661,6 +660,106 @@ const deleteUser = async (client, userId) => {
 
 }
 
+/* Close Attendance POlicy */
+const closeAttendancePolicy = async (client, employeeId) => {
+
+    const query = `
+        UPDATE employee_attendance_policy
+        SET 
+            effective_to = CURRENT_DATE,
+            updated_at = NOW()
+        WHERE employee_id = $1 AND effective_to IS NULL;
+    `;
+
+    await client.query(query, [employeeId]);
+
+}
+
+/* Close Employee Shift */
+const closeEmployeeShift = async (client, employeeId) => {
+
+    const query = `
+        UPDATE employee_shifts
+        SET
+            effective_to = CURRENT_DATE,
+            updated_at = NOW()
+        WHERE employee_id = $1 AND effective_to IS NULL;
+    `;
+
+    await client.query(query, [employeeId]);
+
+}
+
+/* Close reporting manager */
+const closeReportingManager = async (client, employeeId) => {
+
+    const query = `
+        UPDATE employee_reporting_manager
+        SET
+            effective_to = CURRENT_DATE,
+            updated_at = NOW()
+        WHERE employee_id =$1 AND effective_to IS NULL;
+    `;
+
+    await client.query(query, [employeeId]);
+}
+
+/* Return Assets */
+const returnEmployeeAssests = async (client, employeeId) => {
+
+    /* Get all the active assets assigned to employee */
+    const assetQuery = `
+        SELECT asset_id
+        FROM employee_assets
+        WHERE employee_id = $1 AND returned_date IS NULL; 
+    `;
+
+    const assets = await client.query(assetQuery, [employeeId]);
+
+    for(const asset of assets.rows) {
+
+        await client.query(
+            `
+                UPDATE employee_assets
+                SET  
+                    returned_date = CURRENT_DATE,
+                    remark = 'Employee Deactivated',
+                    returned_condition = 'Good',
+                    updated_at = NOW()
+                WHERE employee_id = $1 AND asset_id = $2 AND returned_date IS NULL
+            `,
+            [employeeId, asset.asset_id]
+        );
+
+        await client.query(
+            `
+                UPDATE company_assets 
+                SET 
+                    status = 'Available',
+                    condition = 'Good',
+                    updated_at = NOW()
+                WHERE asset_id = $1;
+            `,
+            [asset.asset_id]
+        );
+
+
+    }
+}
+
+/* Revoke refresh tokens */
+const revokeRefreshTokens = async(client, userId) => {
+
+    const query = `
+        UPDATE  refresh_tokens
+        SET 
+            revoked = TRUE,
+            revoked_at = NOW()
+        WHERE user_id = $1 AND revoked = FALSE;
+    `;
+
+    await client.query(query, [userId]);
+}
 
 module.exports = {
     createEmployee,
@@ -687,4 +786,9 @@ module.exports = {
     closeCurrentLeaveAccruals,
     deleteEmployee,
     deleteUser,
+    closeAttendancePolicy,
+    closeEmployeeShift,
+    closeReportingManager,
+    returnEmployeeAssests,
+    revokeRefreshTokens,
 };

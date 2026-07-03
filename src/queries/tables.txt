@@ -173,18 +173,6 @@ VALUES
 ('CONTRACT', 'Contract Employees'),
 ('CONSULTANT', 'Consultant Employees');
 
--- Leave Master
-CREATE TABLE leave_master (
-	leave_id BIGSERIAL PRIMARY KEY,
-	leave_code VARCHAR(20) UNIQUE NOT NULL,
-	leave_name VARCHAR(200) UNIQUE NOT NULL,
-	description TEXT NOT NULL,
-	is_paid BOOLEAN DEFAULT TRUE,
-	is_active BOOLEAN DEFAULT TRUE,
-	create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Employee reporting manager
 CREATE TABLE employee_reporting_manager
 (
@@ -225,16 +213,29 @@ CREATE TABLE department_reporting_managers
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Leave Master
+CREATE TABLE leave_master (
+	leave_id BIGSERIAL PRIMARY KEY,
+	leave_code VARCHAR(20) UNIQUE NOT NULL,
+	leave_name VARCHAR(200) UNIQUE NOT NULL,
+	description TEXT NOT NULL,
+	is_paid BOOLEAN DEFAULT TRUE,
+	is_active BOOLEAN DEFAULT TRUE,
+	create_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 INSERT INTO leave_master
-(leave_code, leave_name, description)
+(leave_code, leave_name, description, is_paid, is_active)
 VALUES
-('AL', 'Annual Leave', 'Annual Privilege Leave'),
-('SL', 'Sick Leave', 'Medical Leave'),
-('CL', 'Casual Leave', 'Casual Leave'),
-('ML', 'Maternity Leave', 'Maternity Leave'),
-('PL', 'Paternity Leave', 'Paternity Leave'),
-('VL', 'Vacation Leave', 'Vacation Leave'),
-('LOP', 'Loss Of Pay', 'Unpaid Leave'),;
+('AL', 'Annual Leave', 'Annual Privilege Leave', TRUE, TRUE),
+('SL', 'Sick Leave', 'Medical Leave', TRUE, TRUE),
+('CL', 'Casual Leave', 'Casual Leave', TRUE, TRUE),
+('ML', 'Maternity Leave', 'Maternity Leave', TRUE, TRUE),
+('PL', 'Paternity Leave', 'Paternity Leave', TRUE, TRUE),
+('VL', 'Vacation Leave', 'Vacation Leave', TRUE, TRUE),
+('LOP', 'Loss Of Pay', 'Unpaid Leave', FALSE, TRUE),
+('WFH', 'Work From Home', 'Remote Working', TRUE, TRUE);
 
 -- Leave Policy
 CREATE TABLE leave_policy (
@@ -451,7 +452,10 @@ VALUES
 (5, 1, 'Intern Paternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'MALE', CURRENT_DATE, NULL),
 
 -- Loss Of Pay
-(6, 1, 'Intern Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+(7, 1, 'Intern Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- WFH
+(8, 1, 'Intern WFH', 5, 0.5, 5, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
 
 
 /* =========================================================
@@ -474,7 +478,10 @@ VALUES
 (5, 2, 'Probation Paternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'MALE', CURRENT_DATE, NULL),
 
 -- Loss Of Pay
-(6, 2, 'Probation Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+(7, 2, 'Probation Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- WFH
+(8, 2, 'Probation WFH', 10, 1, 10, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
 
 
 /* =========================================================
@@ -497,7 +504,10 @@ VALUES
 (5, 3, 'Permanent Paternity Leave', 10, 0, 10, FALSE, 0, FALSE, TRUE, FALSE, FALSE, FALSE, 'MALE', CURRENT_DATE, NULL),
 
 -- Loss Of Pay
-(6, 3, 'Permanent Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+(7, 3, 'Permanent Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+
+-- Work From Home
+(8, 3, 'Permanent WFH', 24, 2, 30, FALSE, 0, FALSE, TRUE, CURRENT_DATE),
 
 
 /* =========================================================
@@ -520,7 +530,7 @@ VALUES
 (5, 4, 'Contract Paternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'MALE', CURRENT_DATE, NULL),
 
 -- Loss Of Pay
-(6, 4, 'Contract Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
+(7, 4, 'Contract Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL),
 
 
 /* =========================================================
@@ -543,7 +553,7 @@ VALUES
 (5, 5, 'Consultant Paternity Leave', 0, 0, 0, FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, 'MALE', CURRENT_DATE, NULL),
 
 -- Loss Of Pay
-(6, 5, 'Consultant Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL);
+(7, 5, 'Consultant Loss Of Pay Leave', 0, 0, 365, FALSE, 0, FALSE, TRUE, TRUE, FALSE, FALSE, 'ALL', CURRENT_DATE, NULL);
 
 CREATE TABLE employee_leave_balance (
 	balance_id BIGSERIAL PRIMARY KEY,
@@ -658,15 +668,29 @@ CREATE TABLE leave_encashment (
 -- Holidays
 CREATE TABLE company_holiday (
     holiday_id BIGSERIAL PRIMARY KEY,
-
     holiday_name VARCHAR(100),
-
     holiday_date DATE,
-
     holiday_type VARCHAR(30),
-
     description TEXT
 );
+
+INSERT INTO company_holidays
+(
+	holiday_name,
+	holiday_date,
+	holiday_type,
+	description
+)
+VALUES
+('New Year','2026-01-01','National','New Year'),
+('Pongal','2026-01-15','Festival','Pongal'),
+('Republic Day','2026-01-26','National','Republic Day'),
+('Good Friday','2026-04-03','Festival','Good Friday'),
+('Labour Day','2026-05-01','National','Labour Day'),
+('Independence Day','2026-08-15','National','Independence Day'),
+('Gandhi Jayanthi','2026-10-02','National','Gandhi Jayanthi'),
+('Diwali','2026-11-08','Festival','Diwali'),
+('Christmas','2026-12-25','Festival','Christmas');
 
 -- Attendance Poilcy
 CREATE TABLE attendance_policies (
@@ -692,7 +716,9 @@ INSERT INTO attendance_policies(
 	half_day_hours,
 	weekly_working_days
 )
-VALUES ('General Office', '09:30', '18:30', 15, 8, 4, 5);
+VALUES 
+('General Office', '09:30', '18:30', 15, 8, 4, 5),
+('Flexible Office', '10:00', '19:00', 20, 8, 4, 5);
 
 -- Shifts
 CREATE TABLE shifts (
@@ -702,7 +728,7 @@ CREATE TABLE shifts (
 	start_time TIME NOT NULL,
 	end_time TIME NOT NULL,
 	grace_minutes INT,
-	weekly_off VARCHAR(20),
+	weekly_off VARCHAR(30)[],
 	is_night_shift BOOLEAN DEFAULT FALSE,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP
@@ -718,9 +744,11 @@ INSERT INTO shifts (
 	is_night_shift
 ) 
 VALUES
-('GS', 'General Shift', '09:30', '18:30', 15, 'Sunday', FALSE),
-('MS', 'Morning Shift', '06:00', '15:00', 10, 'Sunday', FALSE),
-('NS', 'night shift', '22:00', '06:00', 15, 'Sunday', TRUE);
+('GS', 'General Shift', '09:30', '18:30', 15, ARRAY['Saturday', 'Sunday'], FALSE),
+('MS', 'Morning Shift', '06:00', '15:00', 10, ARRAY['Saturday', 'Sunday'], FALSE),
+('NS', 'night shift', '22:00', '06:00', 15, ARRAY['Saturday', 'Sunday'], TRUE),
+('ES', 'Evening Shift', '14:00', '23:00', 10, ARRAY['Saturday', 'Sunday'], FALSE),
+('FS', 'Flexible Shift', '10:00', '19:00', 20, ARRAY['Saturday', 'Sunday'], FALSE);
 
 -- Employee Addentance Policy
 CREATE TABLE employee_attendance_policy(
@@ -955,6 +983,12 @@ ON p.name IN (
 
 )
 WHERE r.name = 'Employee';
+
+INSERT INTO designations(designation_name)
+values('HR Manager'), ('HR Executive'), ('Software Engineer'), ('Senior Software Engineer'), ('Sales Manager'), ('Marketing Executive'), 
+('Accountant'), ('Finance Manager'), ('Admin Executive');
+
+
 
 
 

@@ -42,7 +42,15 @@ const login = async (credentails) => {
 // Refresh Token
 const refreshToken = async (token) => {
 
-    const decoded = verifyRefreshToken(token);
+    let decoded;
+
+    try {
+        decoded = verifyRefreshToken(token);
+    } catch {
+        const err = new Error("Invalid or expired refresh token");
+        err.statusCode = 401;
+        throw err;
+    }
 
     const exists = await userService.findRefreshToken(token);
 
@@ -54,10 +62,16 @@ const refreshToken = async (token) => {
 
     const user = await userService.getUserById(decoded.userId);
 
+    if(!user) {
+        const err = new Error('User not found.');
+        err.statusCode = 404;
+        throw err;
+    }
+
     const accessToken = generateToken(user);
     const newRefreshToken = generateRefreshToken(user);
 
-    await userService.deleteRefreshToken(token);
+    await userService.revokeRefreshToken(token);
 
     await userService.saveRefreshToken(user.id, newRefreshToken);
 
@@ -70,7 +84,7 @@ const refreshToken = async (token) => {
 
 // Logout
 const logout = async (token) => {
-    await userService.deleteRefreshToken(token);
+    await userService.revokeRefreshToken(token);
 }
 
 module.exports = {

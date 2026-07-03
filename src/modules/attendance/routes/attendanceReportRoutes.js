@@ -18,7 +18,7 @@ const authorize = require("../../../middlewares/authorize");
 
 /**
  * @swagger
- * /attendance-report:
+ * /attendance-reports:
  *   get:
  *     summary: Get attendance report
  *     description: Retrieves a paginated attendance report with optional filters.
@@ -30,7 +30,6 @@ const authorize = require("../../../middlewares/authorize");
  *     parameters:
  *       - in: query
  *         name: month
- *         required: true
  *         schema:
  *           type: integer
  *           minimum: 1
@@ -39,7 +38,6 @@ const authorize = require("../../../middlewares/authorize");
  *
  *       - in: query
  *         name: year
- *         required: true
  *         schema:
  *           type: integer
  *         example: 2026
@@ -102,7 +100,7 @@ router.get(
 
 /**
  * @swagger
- * /attendance-report/summary:
+ * /attendance-reports/summary:
  *   get:
  *     summary: Get attendance summary
  *     description: Returns attendance summary statistics for the selected month and year.

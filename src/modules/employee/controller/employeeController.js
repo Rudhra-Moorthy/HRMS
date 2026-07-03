@@ -6,7 +6,7 @@ const createEmployee = async (req, res) => {
 
     try {
 
-        const dto = createEmployee(req.body);
+        const dto = createEmployeeDTO(req.body);
         const result = await employeeService.createEmployee(dto);
 
         return res.status(201).json({

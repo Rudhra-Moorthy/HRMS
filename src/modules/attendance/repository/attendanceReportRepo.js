@@ -94,7 +94,7 @@ const getAttendanceReport = async (pool, filters) => {
                 2
             ) AS attendance_percentage
             
-        FROM attendance a
+        FROM attendances a
         JOIN employees e
             ON e.id = a.employee_id
         JOIN departments d
@@ -163,7 +163,7 @@ const getAttendanceReportCount = async (pool, filters) => {
     const query = `
         SELECT COUNT(*) as total FROM (
             SELECT e.id 
-            FROM attendance a
+            FROM attendances a
             JOIN employees e
                 ON e.id = a.employee_id
             ${where}
@@ -282,8 +282,8 @@ const exportAttendanceReport = async (pool, filters) => {
             e.full_name,
             d.dept_name,
             a.attendance_date,
-            a.check_in_time,
-            a.check_out_time,
+            a.check_in,
+            a.check_out,
             a.total_hours,
             a.attendance_status
         FROM attendances a

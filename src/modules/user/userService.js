@@ -14,7 +14,7 @@ const getUserByEmail = async (email) => {
             ON r.id = rp.role_id
         JOIN permissions p 
             ON rp.permission_id = p.id
-        WHERE u.email = $1
+        WHERE u.email = $1 AND u.is_active = TRUE AND u.deleted_at IS NULL
         GROUP BY u.id, u.email, u.password, r.name`,
         [email]
     );
@@ -59,9 +59,14 @@ const saveRefreshToken = async (id, refreshToken) => {
 const findRefreshToken = async (token) => {
 
     const result = await pool.query(
-       `SELECT * FROM refresh_tokens
-        WHERE token = $1
-        
+       `
+        SELECT * 
+        FROM refresh_tokens
+        WHERE 
+            token = $1 AND 
+            revoked = false AND 
+            expires_at > NOW() 
+        LIMIT 1;
        `,
        [token]
     );
@@ -70,11 +75,15 @@ const findRefreshToken = async (token) => {
 }
 
 // Delete the refresh token
-const deleteRefreshToken = async (token) => {
+const revokeRefreshToken = async (token) => {
     await pool.query(
-       `DELETE FROM refresh_tokens
-        WHERE token = $1
-       `,
+       `
+        UPDATE refresh_tokens
+        SET
+            revoked = TRUE,
+            revoked_at = NOW()
+        WHERE token = $1;
+        `,
        [token]
     );
 }
@@ -84,5 +93,5 @@ module.exports = {
     saveRefreshToken,
     findRefreshToken,
     getUserById,
-    deleteRefreshToken,
+    revokeRefreshToken,
 }

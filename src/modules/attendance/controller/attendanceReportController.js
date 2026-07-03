@@ -5,7 +5,7 @@ const getAttendanceReport = async (req, res) => {
 
     try {
 
-        const report = await service.getAttendanceReport(pool, req.query);
+        const report = await service.getAttendanceReport(req.query);
 
         return res.status(200).json({
             success: true,
@@ -27,7 +27,7 @@ const getAttendanceReport = async (req, res) => {
 const getAttendanceSummary = async (req, res) => {
 
     try {
-        const summary = await service.getAttendanceSummary(pool, req.query);
+        const summary = await service.getAttendanceSummary(req.query);
 
         return res.status(200).json({
             success: true,
@@ -53,7 +53,7 @@ const exportAttendanceReport = async (req, res) => {
 
         const report = await service.exportAttendanceReport(req.query);
 
-        return res.status(300).json({
+        return res.status(200).json({
             success: true,
             message: 'Attendance report for export has been fetched successfully.',
             data: report

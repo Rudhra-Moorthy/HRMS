@@ -7,6 +7,7 @@ const CreateEmployeeDTO = (employee)=> {
         phone: employee.phone,
         departmentId: employee.departmentId,
         designationId: employee.designationId,
+        employmentCategoryId: employee.employmentCategoryId,
         joinDate: employee.joinDate,
         salary: employee.salary,
         address: employee.address,

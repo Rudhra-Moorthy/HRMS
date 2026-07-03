@@ -1,6 +1,8 @@
 const pool = require('../../../config/db');
 const { hashPassword } = require('../../utils/hash');
 const employeeRepo = require('../repository/employeeRepo');
+const employeeDto = require('../dto/createEmployeeDto');
+const salaryDto = require('../dto/salaryDto');
 const crypto = require('crypto');
 
 //  Cache role ID after first successful lookup
@@ -75,7 +77,8 @@ const createEmployee = async (dto) => {
         /* 
             6. Create salary structure 
         */
-        await employeeRepo.createSalary(client, employee.id, dto.salaryStructure);
+       const calculatedSalary = calculateSalary(dto.salaryStructure);
+        await employeeRepo.createSalary(client, employee.id, calculatedSalary);
 
         /*
             7. Read leave policies using employee employment category.   
@@ -95,7 +98,7 @@ const createEmployee = async (dto) => {
         /*
             9. Initialize leave accrual records 
         */
-        await employeeRepo.initializeLeaveAccrual(client, employee.id, policies);
+        await employeeRepo.initializeLeaveAccruals(client, employee.id, policies);
 
         /*
             10. Initialize Attendance Policy
@@ -237,7 +240,8 @@ const updateEmployee = async (employeeId, dto) => {
     Get All Employees
 */
 const getEmployees = async(filters) => {
-    return employeeRepo.getEmployees(pool, filters);
+    const employee = await employeeRepo.getEmployees(pool, filters);
+    return employee;
 }
 
 /*
@@ -272,16 +276,40 @@ const deleteEmployee = async(employeeId) => {
 
         await client.query('BEGIN');
 
+        /* 1. Ckeck Employee exists */
         const employee = await employeeRepo.getEmployee(client, employeeId);
-
         if(!employee) {
             const err = new Error('Employee not found');
             err.statusCode = 404;
             throw err;
         }
 
-        await employeeRepo.deleteEmployee(client, employeeId);
+        /* 2. Close the attendance policy */
+        await employeeRepo.closeAttendancePolicy(client, employeeId);
+
+        /* 3. Close employee shift */
+        await employeeRepo.closeEmployeeShift(client, employeeId);
+
+        /* 4. Close Reporting Manager */
+        await employeeRepo.closeReportingManager(client, employeeId);
+
+        /* 5. Close leave Accruels */
+        await employeeRepo.closeCurrentLeaveAccruals(client, employeeId);
+
+        /* 6. Close leave balances */
+        await employeeRepo.closeCurrentLeaveBalances(client, employeeId);
+
+        /* 7. Return Assets */
+        await employeeRepo.returnEmployeeAssests(client, employeeId);
+
+        /* 8. Revoke refresh tokens */
+        await employeeRepo.revokeRefreshTokens(client, employee.user_id);
+
+        /* 9. Disable User login */
         await employeeRepo.deleteUser(client, employee.user_id);
+
+        /* 10. Deactivate Employee */
+        await employeeRepo.deleteEmployee(client, employeeId);
 
         await client.query('COMMIT');
 

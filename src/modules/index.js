@@ -18,7 +18,7 @@ router.use('/employees', employeeRoutes);
 router.use('/attendances', attendanceRoutes);
 router.use('/attendance-regularizations', attendanceRegularizationRoutes);
 router.use('/attendance-regularizations-history', attendanceRegularizationHistoryRoutes);
-router.use('/attendance-report', attendanceReportRoutes);
+router.use('/attendance-reports', attendanceReportRoutes);
 router.use('/requirements', requirementRoutes);
 router.use('/recruitments', recruitmentRoutes);
 router.use('/announcements', announcementRoutes);
