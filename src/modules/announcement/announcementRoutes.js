@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const announcementController = require('./controller/announcementController');
+const controller = require('./announcementController');
 
 const authenticate = require('../../middlewares/authenticate');
 const authorize = require('../../middlewares/authorize');
@@ -73,7 +73,7 @@ router.post(
     '/',
     authenticate,
     authorize('announcement.create'),
-    announcementController.createAnnouncement
+    controller.createAnnouncement
 );
 
 /**
@@ -101,7 +101,7 @@ router.get(
     '/',
     authenticate,
     authorize('announcement.view'),
-    announcementController.getAllAnnouncements
+    controller.getAllAnnouncements
 );
 
 /**
@@ -140,7 +140,7 @@ router.get(
     '/:id',
     authenticate,
     authorize('announcement.view'),
-    announcementController.getAnnouncementById
+    controller.getAnnouncementById
 );
 
 /**
@@ -204,7 +204,7 @@ router.patch(
     '/:id',
     authenticate,
     authorize('announcement.update'),
-    announcementController.updateAnnouncement
+    controller.updateAnnouncement
 );
 
 /**
@@ -243,7 +243,7 @@ router.delete(
     '/:id',
     authenticate,
     authorize('announcement.delete'),
-    announcementController.deleteAnnouncement
+    controller.deleteAnnouncement
 );
 
 module.exports = router;

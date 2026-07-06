@@ -863,7 +863,8 @@ VALUES
 ('candidate.create'), ('candidate.view'), ('candidate.update'), ('candidate.delete'),
 ('interview.create'), ('interview.update'), ('interview.view'), ('interview.delete'),
 ('requirement.create'), ('requirement.view'), ('requirement.update'), ('requirement.delete'),
-('resignation.create'), ('resignation.view'), ('resignation.update'), ('resignation.delete'),
+('resignation.create'), ('resignation.view'), ('resignation.update'), ('resignation.delete'), ('resignation.approve'), ('resignation.reject'), 
+('resignation.hr.view'), ('resignation.hr.approve'), ('resignation.hr.reject'),
 ('timeTracker.view'), ('timeTracker.create'), ('timeTracker.update'), ('timeTracker.delete');
 
 INSERT INTO role_permissions(role_id, permission_id) 
@@ -988,8 +989,172 @@ INSERT INTO designations(designation_name)
 values('HR Manager'), ('HR Executive'), ('Software Engineer'), ('Senior Software Engineer'), ('Sales Manager'), ('Marketing Executive'), 
 ('Accountant'), ('Finance Manager'), ('Admin Executive');
 
+-- Resignation 
+-- resignation Reasons (Static)
+CREATE TABLE resignation_reasons(
+	id BIGSERIAL PRIMARY KEY,
+	reason_name VARCHAR(100) NOT NULL UNIQUE,
+	is_active BOOLEAN DEFAULT TRUE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP
+);
+INSERT INTO resignation_reasons(reason_name)
+VALUES
+('Better Opportunity'),
+('Higher Education'),
+('Relocation'),
+('Health Issues'),
+('Family Responsibilities'),
+('Career Change'),
+('Retirement'),
+('Personal Reasons'),
+('Business'),
+('Others');
 
+-- Resignation table
+CREATE TABLE resignations(
+	id BIGSERIAL PRIMARY KEY,
+	employee_id BIGINT NOT NULL,
+	reporting_manager_id BIGINT NOT NULL,
+	reason_id BIGINT NOT NULL,
+	resignation_date DATE NOT NULL,
+	notice_period_days INT NOT NULL,
+	last_working_day DATE NOT NULL,
+	additional_details TEXT,
+	status VARCHAR(20) DEFAULT 'PENDING' CHECK(
+		status IN ('PENDING', 'MANAGER_APPROVED', 'MANAGER_REJECTED', 'HR_APPROVED', 'HR_REJECTED', 'EXIT_CLEARANCE', 'FINAL_SETTLEMENT', 'COMPLETED', 'CANCELLED')
+	),
+	manager_action_at TIMESTAMP,
+	hr_action_at TIMESTAMP,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP,
+	deleted_at TIMESTAMP,
+	CONSTRAINT fk_emp FOREIGN KEY(employee_id) REFERENCES employees(id),
+	CONSTRAINT fk_reason FOREIGN KEY(reason_id) REFERENCES resignation_reasons(id),
+	CONSTRAINT fk_manager FOREIGN KEY(reporting_manager_id) REFERENCES employees(id)
+);
 
+-- Resignation History
+CREATE TABLE resignation_history(
+	id BIGSERIAL PRIMARY KEY,
+	resignation_id BIGINT NOT NULL REFERENCES resignations(id) ON DELETE CASCADE,
+	action VARCHAR(100) NOT NULL,
+	action_by BIGINT REFERENCES employees(id),
+	old_status VARCHAR(30),
+	new_status VARCHAR(30),
+	remarks TEXT,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Exit clearance
+CREATE TABLE exit_clearance (
+	id BIGSERIAL PRIMARY KEY,
+	resignation_id BIGINT NOT NULL UNIQUE REFERENCES resignations(id),
+	employee_id BIGINT NOT NULL REFERENCES employees(id),
+	overall_status VARCHAR(20) DEFAULT 'PENDING' CHECK(
+		overall_status IN ('PENDING', 'IN_PROGRESS', 'COMPLETED')
+	),
+	completed_at TIMESTAMP,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP
+);
+
+-- EXIT CLEARANCE TASKS
+CREATE TABLE exit_clearance_tasks (
+    id BIGSERIAL PRIMARY KEY,
+    clearance_id BIGINT NOT NULL
+        REFERENCES exit_clearance(id)
+        ON DELETE CASCADE,
+    department_name VARCHAR(50) NOT NULL,
+    assigned_to BIGINT
+        REFERENCES employees(id),
+    status VARCHAR(20)
+        DEFAULT 'PENDING'
+        CHECK
+        (
+            status IN ('PENDING', 'APPROVED', 'REJECTED')
+        ),
+    remarks TEXT,
+    approved_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+); 
+
+-- Exit clearance History
+CREATE TABLE exit_clearance_history (
+    id BIGSERIAL PRIMARY KEY,
+    task_id BIGINT NOT NULL
+        REFERENCES exit_clearance_tasks(id)
+        ON DELETE CASCADE,
+    action VARCHAR(50),
+    action_by BIGINT
+        REFERENCES employees(id),
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Final Settlement
+CREATE TABLE final_settlements (
+    id BIGSERIAL PRIMARY KEY,
+    resignation_id BIGINT NOT NULL UNIQUE
+        REFERENCES resignations(id),
+    employee_id BIGINT NOT NULL
+        REFERENCES employees(id),
+    leave_encashment DECIMAL(12,2) DEFAULT 0,
+    pending_salary DECIMAL(12,2) DEFAULT 0,
+    bonus DECIMAL(12,2) DEFAULT 0,
+    deductions DECIMAL(12,2) DEFAULT 0,
+    recovery DECIMAL(12,2) DEFAULT 0,
+    gratuity DECIMAL(12,2) DEFAULT 0,
+    net_settlement DECIMAL(12,2) DEFAULT 0,
+    settlement_status VARCHAR(20)
+        DEFAULT 'PENDING'
+        CHECK
+        (
+            settlement_status IN
+            (
+                'PENDING',
+                'GENERATED',
+                'PAID'
+            )
+        ),
+    paid_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+-- Settlement Components
+CREATE TABLE settlement_components (
+    id BIGSERIAL PRIMARY KEY,
+    settlement_id BIGINT NOT NULL
+        REFERENCES final_settlements(id)
+        ON DELETE CASCADE,
+    component_name VARCHAR(100),
+    component_type VARCHAR(20)
+        CHECK
+        (
+            component_type IN
+            (
+                'EARNING',
+                'DEDUCTION'
+            )
+        ),
+    amount DECIMAL(12,2),
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_resignation_employee
+ON resignations(employee_id);
+
+CREATE INDEX idx_resignation_status
+ON resignations(status);
+
+CREATE INDEX idx_exit_employee
+ON exit_clearance(employee_id);
+
+CREATE INDEX idx_settlement_employee
+ON final_settlements(employee_id);
 
 
 

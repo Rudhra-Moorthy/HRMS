@@ -1,4 +1,4 @@
-const announcementService = require('../service/announcementService');
+const service = require('./announcementService');
 
 const createAnnouncement = async (req, res) => {
     try {
@@ -24,7 +24,7 @@ const createAnnouncement = async (req, res) => {
             });
         }
 
-        const data = await announcementService.createAnnouncement(req.body);
+        const data = await service.createAnnouncement(req.body);
 
         return res.status(201).json({
             success: true,
@@ -45,7 +45,7 @@ const createAnnouncement = async (req, res) => {
 const getAllAnnouncements = async (req, res) => {
     try {
 
-        const data = await announcementService.getAllAnnouncements();
+        const data = await service.getAllAnnouncements();
 
         return res.status(200).json({
             success: true,
@@ -65,7 +65,7 @@ const getAllAnnouncements = async (req, res) => {
 const getAnnouncementById = async (req, res) => {
     try {
 
-        const data = await announcementService.getAnnouncementById(req.params.id);
+        const data = await service.getAnnouncementById(req.params.id);
 
         if (!data) {
             return res.status(404).json({
@@ -92,7 +92,7 @@ const getAnnouncementById = async (req, res) => {
 const updateAnnouncement = async (req, res) => {
     try {
 
-        const data = await announcementService.updateAnnouncement(
+        const data = await service.updateAnnouncement(
             req.params.id,
             req.body
         );
@@ -123,7 +123,7 @@ const updateAnnouncement = async (req, res) => {
 const deleteAnnouncement = async (req, res) => {
     try {
 
-        const data = await announcementService.deleteAnnouncement(req.params.id);
+        const data = await service.deleteAnnouncement(req.params.id);
 
         if (!data) {
             return res.status(404).json({

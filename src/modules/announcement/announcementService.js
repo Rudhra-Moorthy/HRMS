@@ -1,6 +1,6 @@
-const pool = require('../../../config/db');
-const announcementRepo = require('../repository/announcementRepository');
-const announcementDto = require('../dto/announcementDto');
+const pool = require('../../config/db');
+const service = require('./announcementRepository');
+const announcementDto = require('./announcementDto');
 
 const createAnnouncement = async (body) => {
 
@@ -10,7 +10,7 @@ const createAnnouncement = async (body) => {
 
         await client.query('BEGIN');
 
-        const result = await announcementRepo.createAnnouncement(client, body);
+        const result = await service.createAnnouncement(client, body);
 
         await client.query('COMMIT');
 
@@ -34,7 +34,7 @@ const getAllAnnouncements = async () => {
 
     try {
 
-        const announcements = await announcementRepo.getAllAnnouncements(pool);
+        const announcements = await service.getAllAnnouncements(pool);
 
         return announcements.map(announcementDto);
 
@@ -47,7 +47,7 @@ const getAllAnnouncements = async () => {
 const getAnnouncementById = async (id) => {
 
     try {
-        const announcement = await announcementRepo.getAnnouncementById(pool, id);
+        const announcement = await service.getAnnouncementById(pool, id);
         return announcementDto(announcement);
     } catch (err) {
         throw err;
@@ -63,7 +63,7 @@ const updateAnnouncement = async (id, body) => {
 
         await client.query('BEGIN');
 
-        const result = await announcementRepo.updateAnnouncement(client, id, body);
+        const result = await service.updateAnnouncement(client, id, body);
 
         await client.query('COMMIT');
 
@@ -91,7 +91,7 @@ const deleteAnnouncement = async (id) => {
 
         await client.query('BEGIN');
 
-        const result = await announcementRepo.deleteAnnouncement(client, id);
+        const result = await service.deleteAnnouncement(client, id);
 
         await client.query('COMMIT');
 

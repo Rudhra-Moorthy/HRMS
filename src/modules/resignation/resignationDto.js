@@ -4,16 +4,15 @@ const resignationDto = (resignation) => {
 
     return {
         id: resignation.id,
-        employeeId: resignation.employee_id,
+        employeeId: resignation.full_name,
+        resignationManagerId: resignation.reporting_manager,
         resignationDate: resignation.resignation_date,
         lastWorkingDay: resignation.last_working_day,
-        reason: resignation.reason,
+        noticePeriodDays: resignation.notice_period_days,
+        reasonId: resignation.reason_name,
+        additionalDetails: resignation.additional_details,
         status: resignation.status,
-        approvedBy: resignation.approved_by,
-        approvedAt: resignation.approved_at,
-        remarks: resignation.remarks,
-        createdAt: resignation.created_at,
-        updatedAt: resignation.updated_at
+        createdAt: resignation.created_at
     };
 
 };
