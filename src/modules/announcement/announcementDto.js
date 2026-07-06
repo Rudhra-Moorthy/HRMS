@@ -12,6 +12,7 @@ const announcementDto = (announcement) => {
         createdAt: announcement.created_at,
         updatedAt: announcement.updated_at
     };
+
 };
 
 module.exports = announcementDto;

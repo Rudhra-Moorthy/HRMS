@@ -1,19 +1,20 @@
-
+// Create Requirement
 const createRequirement = async (client, requirement) => {
 
     const query = `
-        INSERT INTO requirements
-        (
+        INSERT INTO requirements (
             requirement_code,
             position,
             dept_id,
             vacancies,
             experience_required,
             job_description,
-            priority
+            priority,
+            status
         )
-        VALUES
-        ($1,$2,$3,$4,$5,$6,$7)
+        VALUES (
+            $1,$2,$3,$4,$5,$6,$7,$8
+        )
         RETURNING *;
     `;
 
@@ -24,98 +25,130 @@ const createRequirement = async (client, requirement) => {
         requirement.vacancies,
         requirement.experienceRequired,
         requirement.jobDescription,
-        requirement.priority
+        requirement.priority,
+        requirement.status || "OPEN"
     ];
 
     const result = await client.query(query, values);
 
     return result.rows[0];
+
 };
 
 
-const getAllRequirements = async (client) => {
+// Get All Requirements
+const getRequirements = async (client) => {
 
     const query = `
         SELECT *
         FROM requirements
-        ORDER BY created_at DESC
+        WHERE deleted_at IS NULL
+        ORDER BY created_at DESC;
     `;
 
     const result = await client.query(query);
 
     return result.rows;
+
 };
 
 
-const getRequirementById = async (client, id) => {
+// Get Requirement By Id
+const getRequirement = async (client, id) => {
 
     const query = `
         SELECT *
         FROM requirements
-        WHERE id = $1 AND deleted_at IS NULL
+        WHERE id = $1
+        AND deleted_at IS NULL;
     `;
 
     const result = await client.query(query, [id]);
 
     return result.rows[0];
+
 };
 
 
-const updateRequirement = async (client, id, requirement) => {
+// Update Requirement
+const updateRequirement = async (client, id, payload) => {
+
+    const allowedFields = {
+        requirementCode: "requirement_code",
+        position: "position",
+        departmentId: "dept_id",
+        vacancies: "vacancies",
+        experienceRequired: "experience_required",
+        jobDescription: "job_description",
+        priority: "priority",
+        status: "status"
+    };
+
+    const fields = [];
+    const values = [];
+
+    let idx = 1;
+
+    for (const key in payload) {
+
+        if (allowedFields[key]) {
+
+            fields.push(`${allowedFields[key]} = $${idx}`);
+            values.push(payload[key]);
+            idx++;
+
+        }
+
+    }
+
+    if (fields.length === 0) {
+        return null;
+    }
+
+    values.push(id);
 
     const query = `
         UPDATE requirements
         SET
-            position=$1,
-            dept_id=$2,
-            vacancies=$3,
-            experience_required=$4,
-            job_description=$5,
-            priority=$6,
-            status=$7,
-            updated_at=NOW()
-        WHERE id=$8
+            ${fields.join(", ")},
+            updated_at = NOW()
+        WHERE id = $${idx}
+        AND deleted_at IS NULL
         RETURNING *;
     `;
-
-    const values = [
-        requirement.position,
-        requirement.dept_id,
-        requirement.vacancies,
-        requirement.experience_required,
-        requirement.job_description,
-        requirement.priority,
-        requirement.status,
-        id
-    ];
 
     const result = await client.query(query, values);
 
     return result.rows[0];
+
 };
 
 
+// Soft Delete Requirement
 const deleteRequirement = async (client, id) => {
 
     const query = `
         UPDATE requirements
-        SET 
+        SET
             status = 'CLOSED',
-            deleted_at = CURRENT_TIMESTAMP
+            deleted_at = NOW(),
+            updated_at = NOW()
         WHERE id = $1
-        RETURNING *
+        AND deleted_at IS NULL
+        RETURNING *;
     `;
 
     const result = await client.query(query, [id]);
 
     return result.rows[0];
+
 };
 
 
 module.exports = {
     createRequirement,
-    getAllRequirements,
-    getRequirementById,
+    getRequirements,
+    getRequirement,
     updateRequirement,
     deleteRequirement
 };

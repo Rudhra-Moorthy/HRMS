@@ -13,7 +13,8 @@ const interviewDto = (interview) => {
         meetingLink: interview.meeting_link,
         status: interview.status,
         feedback: interview.feedback,
-        createdAt: interview.created_at
+        createdAt: interview.created_at,
+        updatedAt: interview.updated_at
     };
 
 };

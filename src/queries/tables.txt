@@ -267,17 +267,35 @@ CREATE TABLE leave_policy (
 CREATE TABLE announcements(
     id BIGSERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    category VARCHAR(100) NOT NULL,
-    target_audience VARCHAR(100) NOT NULL,
+    category VARCHAR(50)
+    NOT NULL
+    CHECK(category IN
+    (
+        'General',
+        'HR',
+        'Policy',
+        'Holiday',
+        'Event'
+    )),
+    target_audience VARCHAR(50)
+    NOT NULL
+    CHECK(target_audience IN
+    (
+        'All Employees',
+        'HR',
+        'Managers',
+        'Developers',
+        'Finance'
+    )),
     message TEXT NOT NULL,
     created_by BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP DEFAULT NULL,
+	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP,
     CONSTRAINT fk_created_by
-        FOREIGN KEY(created_by)
-        REFERENCES employees(id)
-        ON DELETE CASCADE
+    FOREIGN KEY(created_by)
+    REFERENCES employees(id)
+    ON DELETE CASCADE
 );
 
 --Requirements
@@ -304,7 +322,7 @@ CREATE TABLE requirements(
 );
 
 --Candidates
-CREATE TABLE candidates(
+CREATE TABLE candidates (
     id BIGSERIAL PRIMARY KEY,
     requirement_id BIGINT NOT NULL,
     full_name VARCHAR(255) NOT NULL,
@@ -318,33 +336,45 @@ CREATE TABLE candidates(
     skills TEXT,
     resume_url TEXT,
     status VARCHAR(30)
-        DEFAULT 'Applied',
+        DEFAULT 'Applied'
+        CHECK (
+            status IN (
+                'Applied',
+                'Screening',
+                'Interview',
+                'Selected',
+                'Rejected',
+                'Offered',
+                'Joined'
+            )
+        ),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP DEFAULT NULL,
     CONSTRAINT fk_requirement
-        FOREIGN KEY(requirement_id)
+        FOREIGN KEY (requirement_id)
         REFERENCES requirements(id)
         ON DELETE CASCADE
 );
 
---Candidate Documents
-CREATE TABLE candidate_documents(
+--Candidate Document
+CREATE TABLE candidate_documents (
     id BIGSERIAL PRIMARY KEY,
     candidate_id BIGINT NOT NULL,
     document_name VARCHAR(255),
-    document_type VARCHAR(100),
-    file_url TEXT,
+    document_type VARCHAR(100) NOT NULL,
+    file_url TEXT NOT NULL,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL,
     CONSTRAINT fk_candidate
-        FOREIGN KEY(candidate_id)
+        FOREIGN KEY (candidate_id)
         REFERENCES candidates(id)
         ON DELETE CASCADE
 );
 
 --Interview
-CREATE TABLE interview_schedules(
+CREATE TABLE interview(
     id BIGSERIAL PRIMARY KEY,
     candidate_id BIGINT NOT NULL,
     interviewer_id BIGINT NOT NULL,
@@ -355,19 +385,28 @@ CREATE TABLE interview_schedules(
     meeting_link TEXT,
     status VARCHAR(30)
         DEFAULT 'Scheduled'
-        CHECK (status IN ('Scheduled','Completed','Cancelled')),
+        CHECK (
+            status IN (
+                'Scheduled',
+                'Completed',
+                'Cancelled',
+                'Rescheduled',
+                'No Show'
+            )
+        ),
     feedback TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL,
     CONSTRAINT fk_candidate
-        FOREIGN KEY(candidate_id)
+        FOREIGN KEY (candidate_id)
         REFERENCES candidates(id)
         ON DELETE CASCADE,
     CONSTRAINT fk_interviewer
-        FOREIGN KEY(interviewer_id)
+        FOREIGN KEY (interviewer_id)
         REFERENCES employees(id)
+        ON DELETE RESTRICT
 );
-
 
 --Resignations
 CREATE TABLE resignations(
@@ -394,21 +433,35 @@ CREATE TABLE resignations(
 );
 
 --Time Tracker
-CREATE TABLE time_tracker(
+CREATE TABLE time_tracker (
     id BIGSERIAL PRIMARY KEY,
     employee_id BIGINT NOT NULL,
-    project_name VARCHAR(255),
-    task_name VARCHAR(255),
+    attendance_id BIGINT,
+    project_name VARCHAR(255) NOT NULL,
+    task_name VARCHAR(255) NOT NULL,
     description TEXT,
     start_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP,
     total_hours DECIMAL(5,2),
+    entry_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    status VARCHAR(20)
+        DEFAULT 'IN_PROGRESS'
+        CHECK (status IN (
+            'IN_PROGRESS',
+            'COMPLETED',
+            'CANCELLED'
+        )),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_employee
-        FOREIGN KEY(employee_id)
+    deleted_at TIMESTAMP DEFAULT NULL,
+    CONSTRAINT fk_time_tracker_employee
+        FOREIGN KEY (employee_id)
         REFERENCES employees(id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_time_tracker_attendance
+        FOREIGN KEY (attendance_id)
+        REFERENCES attendance(id)
+        ON DELETE SET NULL
 );
 
 INSERT INTO leave_policy

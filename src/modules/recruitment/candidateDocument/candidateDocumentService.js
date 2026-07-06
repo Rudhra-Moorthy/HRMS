@@ -1,24 +1,25 @@
-const pool = require('../../../config/db');
-const documentRepo = require('./candidateDocumentRepo');
-const documentDto = require('./candidateDocumentDto');
+const pool = require("../../../config/db");
+const documentRepo = require("./candidateDocumentRepo");
+const documentDto = require("./candidateDocumentDto");
 
+// Create Document
 const createDocument = async (body) => {
 
     const client = await pool.connect();
 
     try {
 
-        await client.query('BEGIN');
+        await client.query("BEGIN");
 
         const result = await documentRepo.createDocument(client, body);
 
-        await client.query('COMMIT');
+        await client.query("COMMIT");
 
         return documentDto(result);
 
     } catch (err) {
 
-        await client.query('ROLLBACK');
+        await client.query("ROLLBACK");
         throw err;
 
     } finally {
@@ -29,23 +30,19 @@ const createDocument = async (body) => {
 
 };
 
+// Get All Documents
 const getAllDocuments = async () => {
 
     const client = await pool.connect();
 
     try {
 
-        await client.query('BEGIN');
-
-        const documents = await documentRepo.getAllDocuments(client);
-
-        await client.query('COMMIT');
+        const documents = await documentRepo.getDocuments(client);
 
         return documents.map(documentDto);
 
     } catch (err) {
 
-        await client.query('ROLLBACK');
         throw err;
 
     } finally {
@@ -56,23 +53,19 @@ const getAllDocuments = async () => {
 
 };
 
+// Get Document By Id
 const getDocumentById = async (id) => {
 
     const client = await pool.connect();
 
     try {
 
-        await client.query('BEGIN');
-
-        const document = await documentRepo.getDocumentById(client, id);
-
-        await client.query('COMMIT');
+        const document = await documentRepo.getDocument(client, id);
 
         return documentDto(document);
 
     } catch (err) {
 
-        await client.query('ROLLBACK');
         throw err;
 
     } finally {
@@ -83,23 +76,22 @@ const getDocumentById = async (id) => {
 
 };
 
+// Get Documents By Candidate Id
 const getDocumentsByCandidateId = async (candidateId) => {
 
     const client = await pool.connect();
 
     try {
 
-        await client.query('BEGIN');
-
-        const documents = await documentRepo.getDocumentsByCandidateId(client, candidateId);
-
-        await client.query('COMMIT');
+        const documents = await documentRepo.getDocumentsByCandidateId(
+            client,
+            candidateId
+        );
 
         return documents.map(documentDto);
 
     } catch (err) {
 
-        await client.query('ROLLBACK');
         throw err;
 
     } finally {
@@ -110,23 +102,37 @@ const getDocumentsByCandidateId = async (candidateId) => {
 
 };
 
+// Update Document
 const updateDocument = async (id, body) => {
 
     const client = await pool.connect();
 
     try {
 
-        await client.query('BEGIN');
+        await client.query("BEGIN");
 
-        const result = await documentRepo.updateDocument(client, id, body);
+        const document = await documentRepo.getDocument(client, id);
 
-        await client.query('COMMIT');
+        if (!document) {
+
+            await client.query("ROLLBACK");
+            return null;
+
+        }
+
+        const result = await documentRepo.updateDocument(
+            client,
+            id,
+            body
+        );
+
+        await client.query("COMMIT");
 
         return documentDto(result);
 
     } catch (err) {
 
-        await client.query('ROLLBACK');
+        await client.query("ROLLBACK");
         throw err;
 
     } finally {
@@ -137,23 +143,36 @@ const updateDocument = async (id, body) => {
 
 };
 
+// Delete Document
 const deleteDocument = async (id) => {
 
     const client = await pool.connect();
 
     try {
 
-        await client.query('BEGIN');
+        await client.query("BEGIN");
 
-        const result = await documentRepo.deleteDocument(client, id);
+        const document = await documentRepo.getDocument(client, id);
 
-        await client.query('COMMIT');
+        if (!document) {
 
-        return result;
+            await client.query("ROLLBACK");
+            return null;
+
+        }
+
+        const result = await documentRepo.deleteDocument(
+            client,
+            id
+        );
+
+        await client.query("COMMIT");
+
+        return documentDto(result);
 
     } catch (err) {
 
-        await client.query('ROLLBACK');
+        await client.query("ROLLBACK");
         throw err;
 
     } finally {

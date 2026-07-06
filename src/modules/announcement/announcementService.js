@@ -1,7 +1,10 @@
 const pool = require('../../config/db');
-const service = require('./announcementRepository');
+const announcementRepo = require('./announcementRepository');
 const announcementDto = require('./announcementDto');
 
+/*
+    Create Announcement
+*/
 const createAnnouncement = async (body) => {
 
     const client = await pool.connect();
@@ -10,16 +13,15 @@ const createAnnouncement = async (body) => {
 
         await client.query('BEGIN');
 
-        const result = await service.createAnnouncement(client, body);
+        const announcement = await announcementRepo.createAnnouncement(client, body);
 
         await client.query('COMMIT');
 
-        return announcementDto(result);
+        return announcementDto(announcement);
 
     } catch (err) {
 
         await client.query('ROLLBACK');
-
         throw err;
 
     } finally {
@@ -30,31 +32,39 @@ const createAnnouncement = async (body) => {
 
 };
 
+/*
+    Get All Announcements
+*/
 const getAllAnnouncements = async () => {
 
-    try {
+    const announcements = await announcementRepo.getAllAnnouncements(pool);
 
-        const announcements = await service.getAllAnnouncements(pool);
-
-        return announcements.map(announcementDto);
-
-    } catch (err) {
-        throw err;
-    } 
+    return announcements.map(announcementDto);
 
 };
 
+/*
+    Get Announcement By Id
+*/
 const getAnnouncementById = async (id) => {
 
-    try {
-        const announcement = await service.getAnnouncementById(pool, id);
-        return announcementDto(announcement);
-    } catch (err) {
+    const announcement = await announcementRepo.getAnnouncementById(pool, id);
+
+    if (!announcement) {
+
+        const err = new Error('Announcement not found');
+        err.statusCode = 404;
         throw err;
-    } 
+
+    }
+
+    return announcementDto(announcement);
 
 };
 
+/*
+    Update Announcement
+*/
 const updateAnnouncement = async (id, body) => {
 
     const client = await pool.connect();
@@ -63,16 +73,27 @@ const updateAnnouncement = async (id, body) => {
 
         await client.query('BEGIN');
 
-        const result = await service.updateAnnouncement(client, id, body);
+        const existingAnnouncement =
+            await announcementRepo.getAnnouncementById(client, id);
+
+        if (!existingAnnouncement) {
+
+            const err = new Error('Announcement not found');
+            err.statusCode = 404;
+            throw err;
+
+        }
+
+        const announcement =
+            await announcementRepo.updateAnnouncement(client, id, body);
 
         await client.query('COMMIT');
 
-        return announcementDto(result);
+        return announcementDto(announcement);
 
     } catch (err) {
 
         await client.query('ROLLBACK');
-
         throw err;
 
     } finally {
@@ -83,6 +104,9 @@ const updateAnnouncement = async (id, body) => {
 
 };
 
+/*
+    Soft Delete Announcement
+*/
 const deleteAnnouncement = async (id) => {
 
     const client = await pool.connect();
@@ -91,16 +115,26 @@ const deleteAnnouncement = async (id) => {
 
         await client.query('BEGIN');
 
-        const result = await service.deleteAnnouncement(client, id);
+        const announcement =
+            await announcementRepo.getAnnouncementById(client, id);
+
+        if (!announcement) {
+
+            const err = new Error('Announcement not found');
+            err.statusCode = 404;
+            throw err;
+
+        }
+
+        const result = await announcementRepo.deleteAnnouncement(client, id);
 
         await client.query('COMMIT');
 
-        return result;
+        return announcementDto(result);;
 
     } catch (err) {
 
         await client.query('ROLLBACK');
-
         throw err;
 
     } finally {

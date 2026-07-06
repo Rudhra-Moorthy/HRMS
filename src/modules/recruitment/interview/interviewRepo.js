@@ -1,9 +1,8 @@
-
+// Create Interview
 const createInterview = async (client, interview) => {
 
     const query = `
-        INSERT INTO interview_schedules
-        (
+        INSERT INTO interview_schedules (
             candidate_id,
             interviewer_id,
             interview_type,
@@ -14,35 +13,39 @@ const createInterview = async (client, interview) => {
             status,
             feedback
         )
-        VALUES
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        VALUES (
+            $1,$2,$3,$4,$5,$6,$7,$8,$9
+        )
         RETURNING *;
     `;
 
     const values = [
-        interview.candidate_id,
-        interview.interviewer_id,
-        interview.interview_type,
-        interview.interview_date,
-        interview.start_time,
-        interview.end_time,
-        interview.meeting_link,
-        interview.status,
+        interview.candidateId,
+        interview.interviewerId,
+        interview.interviewType,
+        interview.interviewDate,
+        interview.startTime,
+        interview.endTime,
+        interview.meetingLink,
+        interview.status || "Scheduled",
         interview.feedback
     ];
 
     const result = await client.query(query, values);
 
     return result.rows[0];
+
 };
 
 
-const getAllInterviews = async (client) => {
+// Get All Interviews
+const getInterviews = async (client) => {
 
     const query = `
         SELECT *
         FROM interview_schedules
-        ORDER BY interview_date;
+        WHERE deleted_at IS NULL
+        ORDER BY interview_date ASC, start_time ASC;
     `;
 
     const result = await client.query(query);
@@ -52,12 +55,14 @@ const getAllInterviews = async (client) => {
 };
 
 
-const getInterviewById = async (client, id) => {
+// Get Interview By Id
+const getInterview = async (client, id) => {
 
     const query = `
         SELECT *
         FROM interview_schedules
-        WHERE id=$1;
+        WHERE id = $1
+        AND deleted_at IS NULL;
     `;
 
     const result = await client.query(query, [id]);
@@ -67,36 +72,53 @@ const getInterviewById = async (client, id) => {
 };
 
 
-const updateInterview = async (client, id, interview) => {
+// Update Interview
+const updateInterview = async (client, id, payload) => {
+
+    const allowedFields = {
+        candidateId: "candidate_id",
+        interviewerId: "interviewer_id",
+        interviewType: "interview_type",
+        interviewDate: "interview_date",
+        startTime: "start_time",
+        endTime: "end_time",
+        meetingLink: "meeting_link",
+        status: "status",
+        feedback: "feedback"
+    };
+
+    const fields = [];
+    const values = [];
+
+    let idx = 1;
+
+    for (const key in payload) {
+
+        if (allowedFields[key]) {
+
+            fields.push(`${allowedFields[key]} = $${idx}`);
+            values.push(payload[key]);
+            idx++;
+
+        }
+
+    }
+
+    if (fields.length === 0) {
+        return null;
+    }
+
+    values.push(id);
 
     const query = `
         UPDATE interview_schedules
         SET
-            candidate_id=$1,
-            interviewer_id=$2,
-            interview_type=$3,
-            interview_date=$4,
-            start_time=$5,
-            end_time=$6,
-            meeting_link=$7,
-            status=$8,
-            feedback=$9
-        WHERE id=$10
+            ${fields.join(", ")},
+            updated_at = NOW()
+        WHERE id = $${idx}
+        AND deleted_at IS NULL
         RETURNING *;
     `;
-
-    const values = [
-        interview.candidate_id,
-        interview.interviewer_id,
-        interview.interview_type,
-        interview.interview_date,
-        interview.start_time,
-        interview.end_time,
-        interview.meeting_link,
-        interview.status,
-        interview.feedback,
-        id
-    ];
 
     const result = await client.query(query, values);
 
@@ -105,11 +127,16 @@ const updateInterview = async (client, id, interview) => {
 };
 
 
+// Soft Delete Interview
 const deleteInterview = async (client, id) => {
 
     const query = `
-        DELETE FROM interview_schedules
-        WHERE id=$1
+        UPDATE interview_schedules
+        SET
+            deleted_at = NOW(),
+            updated_at = NOW()
+        WHERE id = $1
+        AND deleted_at IS NULL
         RETURNING *;
     `;
 
@@ -119,10 +146,11 @@ const deleteInterview = async (client, id) => {
 
 };
 
+
 module.exports = {
     createInterview,
-    getAllInterviews,
-    getInterviewById,
+    getInterviews,
+    getInterview,
     updateInterview,
     deleteInterview
 };

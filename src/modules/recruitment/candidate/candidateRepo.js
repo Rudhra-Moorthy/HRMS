@@ -1,9 +1,8 @@
-
+// Create Candidate
 const createCandidate = async (client, candidate) => {
 
     const query = `
-        INSERT INTO candidates
-        (
+        INSERT INTO candidates (
             requirement_id,
             full_name,
             email,
@@ -17,8 +16,9 @@ const createCandidate = async (client, candidate) => {
             resume_url,
             status
         )
-        VALUES
-        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+        VALUES (
+            $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12
+        )
         RETURNING *;
     `;
 
@@ -34,20 +34,22 @@ const createCandidate = async (client, candidate) => {
         candidate.noticePeriod,
         candidate.skills,
         candidate.resumeUrl,
-        candidate.status
+        candidate.status || "Applied"
     ];
 
     const result = await client.query(query, values);
 
     return result.rows[0];
+
 };
 
-
-const getAllCandidates = async (client) => {
+// Get All Candidates
+const getCandidates = async (client) => {
 
     const query = `
         SELECT *
         FROM candidates
+        WHERE deleted_at IS NULL
         ORDER BY created_at DESC;
     `;
 
@@ -57,13 +59,14 @@ const getAllCandidates = async (client) => {
 
 };
 
-
-const getCandidateById = async (client, id) => {
+// Get Candidate By Id
+const getCandidate = async (client, id) => {
 
     const query = `
         SELECT *
         FROM candidates
-        WHERE id = $1;
+        WHERE id = $1
+        AND deleted_at IS NULL;
     `;
 
     const result = await client.query(query, [id]);
@@ -72,56 +75,73 @@ const getCandidateById = async (client, id) => {
 
 };
 
+// Update Candidate
+const updateCandidate = async (client, id, payload) => {
 
-const updateCandidate = async (client, id, candidate) => {
+    const allowedFields = {
+        requirementId: "requirement_id",
+        fullName: "full_name",
+        email: "email",
+        phoneNumber: "phone",
+        experience: "experience",
+        currentCompany: "current_company",
+        currentCtc: "current_ctc",
+        expectedCtc: "expected_ctc",
+        noticePeriod: "notice_period",
+        skills: "skills",
+        resumeUrl: "resume_url",
+        status: "status"
+    };
+
+    const fields = [];
+    const values = [];
+
+    let idx = 1;
+
+    for (const key in payload) {
+
+        if (allowedFields[key]) {
+
+            fields.push(`${allowedFields[key]} = $${idx}`);
+            values.push(payload[key]);
+            idx++;
+
+        }
+
+    }
+
+    if (fields.length === 0) {
+        return null;
+    }
+
+    values.push(id);
 
     const query = `
         UPDATE candidates
         SET
-            requirement_id = $1,
-            full_name = $2,
-            email = $3,
-            phone = $4,
-            experience = $5,
-            current_company = $6,
-            current_ctc = $7,
-            expected_ctc = $8,
-            notice_period = $9,
-            skills = $10,
-            resume_url = $11,
-            status = $12,
+            ${fields.join(", ")},
             updated_at = NOW()
-        WHERE id = $13
+        WHERE id = $${idx}
+        AND deleted_at IS NULL
         RETURNING *;
     `;
-
-    const values = [
-        candidate.requirement_id,
-        candidate.full_name,
-        candidate.email,
-        candidate.phone,
-        candidate.experience,
-        candidate.current_company,
-        candidate.current_ctc,
-        candidate.expected_ctc,
-        candidate.notice_period,
-        candidate.skills,
-        candidate.resume_url,
-        candidate.status,
-        id
-    ];
 
     const result = await client.query(query, values);
 
     return result.rows[0];
+
 };
 
-
+// Soft Delete Candidate
 const deleteCandidate = async (client, id) => {
 
     const query = `
-        DELETE FROM candidates
-        WHERE id=$1
+        UPDATE candidates
+        SET
+            deleted_at = NOW(),
+            updated_at = NOW()
+        WHERE id = $1
+        AND deleted_at IS NULL
         RETURNING *;
     `;
 
@@ -133,8 +153,8 @@ const deleteCandidate = async (client, id) => {
 
 module.exports = {
     createCandidate,
-    getAllCandidates,
-    getCandidateById,
+    getCandidates,
+    getCandidate,
     updateCandidate,
     deleteCandidate
 };

@@ -1,45 +1,22 @@
-    const express = require('express');
+const interviewDto = (interview) => {
 
-    const router = express.Router();
+    if (!interview) return null;
 
-    const interviewController = require('./interviewController');
+    return {
+        id: interview.id,
+        candidateId: interview.candidate_id,
+        interviewerId: interview.interviewer_id,
+        interviewType: interview.interview_type,
+        interviewDate: interview.interview_date,
+        startTime: interview.start_time,
+        endTime: interview.end_time,
+        meetingLink: interview.meeting_link,
+        status: interview.status,
+        feedback: interview.feedback,
+        createdAt: interview.created_at,
+        updatedAt: interview.updated_at
+    };
 
-    const authenticate = require('../../../middlewares/authenticate');
-    const authorize = require('../../../middlewares/authorize');
+};
 
-    router.post(
-        '/',
-        authenticate,
-        authorize('interview.create'),
-        interviewController.createInterview
-    );
-
-    router.get(
-        '/',
-        authenticate,
-        authorize('interview.view'),
-        interviewController.getAllInterviews
-    );
-
-    router.get(
-        '/:id',
-        authenticate,
-        authorize('interview.view'),
-        interviewController.getInterviewById
-    );
-
-    router.patch(
-        '/:id',
-        authenticate,
-        authorize('interview.update'),
-        interviewController.updateInterview
-    );
-
-    router.delete(
-        '/:id',
-        authenticate,
-        authorize('interview.delete'),
-        interviewController.deleteInterview
-    );
-
-    module.exports = router;
+module.exports = interviewDto;

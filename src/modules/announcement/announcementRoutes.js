@@ -1,10 +1,10 @@
 const express = require('express');
-const router = express.Router();
 
-const controller = require('./announcementController');
+const router = express.Router();
 
 const authenticate = require('../../middlewares/authenticate');
 const authorize = require('../../middlewares/authorize');
+const controller = require('./announcementController');
 
 /**
  * @swagger
@@ -17,8 +17,8 @@ const authorize = require('../../middlewares/authorize');
  * @swagger
  * /announcements:
  *   post:
- *     summary: Create announcement
- *     description: Creates a new announcement for the selected target audience.
+ *     summary: Create new announcement
+ *     description: Creates a new announcement and stores it in the database.
  *     tags:
  *       - Announcements
  *     security:
@@ -67,7 +67,7 @@ const authorize = require('../../middlewares/authorize');
  *       403:
  *         description: Access denied
  *       500:
- *         description: Server side error
+ *         description: Internal server error
  */
 router.post(
     '/',
@@ -81,7 +81,7 @@ router.post(
  * /announcements:
  *   get:
  *     summary: Get all announcements
- *     description: Retrieves all announcements ordered by latest created date.
+ *     description: Retrieves all active announcements ordered by latest created date.
  *     tags:
  *       - Announcements
  *     security:
@@ -95,7 +95,7 @@ router.post(
  *       403:
  *         description: Access denied
  *       500:
- *         description: Server side error
+ *         description: Internal server error
  */
 router.get(
     '/',
@@ -109,7 +109,7 @@ router.get(
  * /announcements/{id}:
  *   get:
  *     summary: Get announcement by ID
- *     description: Retrieves an announcement using its ID.
+ *     description: Retrieves a single announcement using its ID.
  *     tags:
  *       - Announcements
  *     security:
@@ -127,6 +127,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Announcement retrieved successfully
+ *       400:
+ *         description: Invalid announcement ID
  *       401:
  *         description: Unauthorized
  *       403:
@@ -134,7 +136,7 @@ router.get(
  *       404:
  *         description: Announcement not found
  *       500:
- *         description: Server side error
+ *         description: Internal server error
  */
 router.get(
     '/:id',
@@ -148,7 +150,7 @@ router.get(
  * /announcements/{id}:
  *   patch:
  *     summary: Update announcement
- *     description: Updates an existing announcement.
+ *     description: Updates one or more fields of an existing announcement.
  *     tags:
  *       - Announcements
  *     security:
@@ -190,7 +192,7 @@ router.get(
  *       200:
  *         description: Announcement updated successfully
  *       400:
- *         description: Validation error
+ *         description: Invalid announcement ID or validation error
  *       401:
  *         description: Unauthorized
  *       403:
@@ -198,7 +200,7 @@ router.get(
  *       404:
  *         description: Announcement not found
  *       500:
- *         description: Server side error
+ *         description: Internal server error
  */
 router.patch(
     '/:id',
@@ -211,8 +213,8 @@ router.patch(
  * @swagger
  * /announcements/{id}:
  *   delete:
- *     summary: Delete announcement
- *     description: Deletes an announcement using its ID.
+ *     summary: Soft delete announcement
+ *     description: Marks an announcement as deleted by setting the deleted_at timestamp.
  *     tags:
  *       - Announcements
  *     security:
@@ -230,6 +232,8 @@ router.patch(
  *     responses:
  *       200:
  *         description: Announcement deleted successfully
+ *       400:
+ *         description: Invalid announcement ID
  *       401:
  *         description: Unauthorized
  *       403:
@@ -237,7 +241,7 @@ router.patch(
  *       404:
  *         description: Announcement not found
  *       500:
- *         description: Server side error
+ *         description: Internal server error
  */
 router.delete(
     '/:id',
