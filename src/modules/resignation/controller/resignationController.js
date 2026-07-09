@@ -1,4 +1,4 @@
-const service = require('./resignationService');
+const service = require('../service/resignationService');
 
 const createResignation = async (req, res) => {
     try {

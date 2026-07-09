@@ -1,7 +1,7 @@
-const pool = require('../../config/db');
-const repo = require('./resignationRepo');
-const resignationDto = require('./resignationDto');
-const RESIGNATION_STATUS = require('../../constants/resignationStatus');
+const pool = require('../../../config/db');
+const repo = require('../repository/resignationRepo');
+const resignationDto = require('../dto/resignationDto');
+const RESIGNATION_STATUS = require('../../../constants/resignationStatus');
 
 const createResignation = async (dto) => {
 
@@ -234,10 +234,14 @@ const hrApproveResignation = async (resignationId, hrId, remarks) => {
         const approved = await repo.hrApproveResignation(client, resignationId);
 
         /* After hr approval create exit clearance */
-        const clearance = await repo.createExitClearance(client, resignation);
+        approved.hr_approved_by = hrId;
+        const clearance = await repo.createExitClearance(client, approved);
 
         /* Create exit clearance tasks */
-        await repo.createExitClearanceTasks(client, clearance.id);
+        await repo.createExitClearanceTasks(client, clearance.id, approved.employee_id);
+
+        /* Generate employee asset clearance */
+        await repo.createExitClearanceAssets(client, clearance.id, approved.employee_id);
 
         /* Log History */
         await repo.logHistory(client, resignationId, 'HR_APPROVED', hrId, RESIGNATION_STATUS.MANAGER_APPROVED, RESIGNATION_STATUS.HR_APPROVED, remarks);
@@ -295,8 +299,6 @@ const hrRejectResignation = async (resignationId, hrId, remarks) => {
         client.release();
     }
 }
-
-
 
 module.exports = {
     createResignation,

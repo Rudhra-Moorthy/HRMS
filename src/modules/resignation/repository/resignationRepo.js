@@ -313,32 +313,165 @@ const createExitClearance = async (client, resignation) => {
     const query = `
         INSERT INTO exit_clearance (
             resignation_id,
-            employee_id
+            employee_id,
+            overall_status,
+            initiated_by,
+            initiated_at
         )
-        VALUES ($1, $2)
+        VALUES ($1, $2, 'PENDING', $3, NOW())
         RETURNING *;
     `;
 
-    const result = await client.query(query, [resignation.id, resignation.employee_id]);
+    const result = await client.query(query, [resignation.id, resignation.employee_id, resignation.hr_approved_by]);
     return result.rows[0];
 
 }
 
-/* Exit clearance tasks */ 
-const createExitClearanceTasks = async (client, clearanceId) => {
+/* Get Clearance templates */
+const getExitClearanceTemplates = async (client) => {
 
-    const departments = ['Human Resource', 'IT', 'Finance', 'Administration'];
+    const query = `
+        SELECT 
+            department_id,
+            display_order,
+        FROM exit_clearance_department_templates
+        WHERE is_active = TRUE
+        ORDER BY display_order;
+    `;
 
-    for(const department of departments) {
+    const result = await client.query(query);
+
+    return result.rows;
+}
+
+/* Get Department approver */
+const getDepartmentApprover = async (client, departmentId) => {
+    
+    const query = `
+        SELECT 
+            employee_id
+        FROM department_approvers
+        WHERE
+            department_id = $1 AND
+            is_primary = TRUE AND 
+            (effective_to IS NULL OR effective_to >= CURRENT_DATE)
+        LIMIT 1;
+    `;
+
+    const result = await client.query(query, [departmentId]);
+    return result.rows[0];
+
+}
+
+/* Get reporting manager */
+const getReportingManager = async (client, employeeId) => {
+
+    const query = `
+        SELECT 
+            manager_id
+        FROM employee_reporting_manager
+        WHERE 
+            employee_id = $1 AND 
+            effective_to IS NULL
+        LIMIT 1;
+    `;
+
+    const result = await client.query(query, [employeeId]);
+    return result.rows[0];
+
+}
+
+/* Create one clearance task */
+const createExitClearanceTask = async (client, task) => {
+
+    const query = `
+        INSERT INTO exit_clearance_tasks (
+            clearance_id,
+            department_id,
+            assigned_to,
+            task_type,
+            task_name,
+            status
+        )
+        VALUES ($1, $2, $3, $4, $5, 'PEDNING')
+        RETURNING *;
+    `;
+    const values = [task.clearanceId, task.departmentId, task.assignedTo, task.taskType, task.taskName];
+
+    const result = await client.query(query, values);
+
+    return result.rows[0];
+
+}
+
+/* Generate exit clearance tasks */
+const createExitClearanceTasks = async (client, clearanceId, employeeId) => {
+
+    /* Reporting Manager Task */
+    const reportingManager = await getReportingManager(client, employeeId);
+    if(reportingManager) {
+        await createExitClearanceTask(
+            client, 
+            {
+                clearanceId,
+                departmentId: null,
+                assignedTo: reportingManager.manager_id,
+                taskType: 'REPORTING_MANAGER',
+                taskName: 'Reporting Manager Clearance'
+            }
+        );
+    }
+
+    /* Department tasks */
+    const templates = await getExitClearanceTemplates(client);
+    for(const template of templates) {
+
+        const approver = await getDepartmentApprover(client, template.department_id);
+        if(!approver) {
+            continue;
+        }
+        await createExitClearanceTask(
+            client, 
+            {
+                clearanceId,
+                departmentId: template.department_id,
+                assignedTo: approver.employee_id,
+                taskType: 'DEPARTMENT',
+                taskName: null
+            }
+        );
+    }
+
+}
+
+/* Create exit clearance assets */
+const createExitClearanceAssets = async (client, clearanceId, employeeId) => {
+
+    const query = `
+        SELECT 
+            id,
+            asset_id
+        FROM employee_assets
+        WHERE 
+            employee_id = $1 AND
+            returned_date IS NULL;
+    `;
+
+    const assest = await client.query(query, [employeeId]);
+
+    for(const asset of assets.rows) {
+
         await client.query(
             `
-                INSERT INTO exit_clearance_tasks (
+                INSERT INTO exit_clearance_assets (
                     clearance_id,
-                    department_name
-                ) 
-                VALUES ($1, $2);
+                    employee_asset_id,
+                    asset_id,
+                    returned
+                )
+                VALUES ($1, $2, $3, FALSE);
             `,
-            [clearanceId, department]
+            [clearanceId, asset.id, asset.asset_id]
         );
     }
 
@@ -362,4 +495,6 @@ module.exports = {
     hrApproveResignation,
     hrRejectResignation,
     createExitClearance,
+    createExitClearanceTasks,
+    createExitClearanceAssets,
 };

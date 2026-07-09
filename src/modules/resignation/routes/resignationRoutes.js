@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
-const controller = require('./resignationController');
+const controller = require('../controller/resignationController');
 
-const authenticate = require('../../middlewares/authenticate');
-const authorize = require('../../middlewares/authorize');
+const authenticate = require('../../../middlewares/authenticate');
+const authorize = require('../../../middlewares/authorize');
 
 /**
  * @swagger

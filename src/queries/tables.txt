@@ -1065,9 +1065,13 @@ CREATE TABLE exit_clearance_tasks (
     clearance_id BIGINT NOT NULL
         REFERENCES exit_clearance(id)
         ON DELETE CASCADE,
-    department_name VARCHAR(50) NOT NULL,
+    dept_id BIGINT REFERENCES departments(id),
     assigned_to BIGINT
         REFERENCES employees(id),
+    task_type VARCHAR(30) CHECK(
+        task_type IN ('REPORTING_MANAGER', 'DEPARTMENT')
+        ),
+    task_name VARCHAR(100), 
     status VARCHAR(20)
         DEFAULT 'PENDING'
         CHECK
@@ -1080,15 +1084,54 @@ CREATE TABLE exit_clearance_tasks (
     updated_at TIMESTAMP
 ); 
 
+-- department approvers
+CREATE TABLE department_approvers (
+    id BIGSERIAL PRIMARY KEY,
+    department_id BIGINT NOT NULL REFERENCES departments(id),
+    employee_id BIGINT NOT NULL REFERENCES employees(id),
+    is_primary BOOLEAN DEFAULT TRUE,
+    effective_from DATE NOT NULL,
+    effective_to DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Exit Clearance Master Table
+CREATE TABLE exit_clearance_department_templates (
+	id BIGSERIAL PRIMARY KEY,
+	department_id BIGINT NOT NULL,
+	display_order INT NOT NULL,
+	is_active BOOLEAN DEFAULT TRUE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP,
+	CONSTRAINT fk_dept FOREIGN KEY(department_id) REFERENCES departments(id)
+);
+
+-- Exit Clearance Assets
+CREATE TABLE exit_clearance_assets (
+	id BIGSERIAL PRIMARY KEY,
+	clearance_id BIGINT NOT NULL REFERENCES exit_clearance(id),
+	asset_id BIGINT NOT NULL REFERENCES company_assets(asset_id),
+	employee_asset_id BIGINT NOT NULL REFERENCES employee_assets(id),
+	returned BOOLEAN DEFAULT FALSE,
+	returned_date DATE,
+	condition VARCHAR(50),
+	remarks TEXT,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP
+);
+
 -- Exit clearance History
 CREATE TABLE exit_clearance_history (
     id BIGSERIAL PRIMARY KEY,
+    clearance_id BIGINT NOT NULL REFERENCES exit_clearance(id),
     task_id BIGINT NOT NULL
         REFERENCES exit_clearance_tasks(id)
         ON DELETE CASCADE,
     action VARCHAR(50),
     action_by BIGINT
         REFERENCES employees(id),
+    old_status VARCHAR(30),
+    new_status VARCHAR(30),
     remarks TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

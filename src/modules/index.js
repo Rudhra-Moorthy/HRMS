@@ -6,7 +6,8 @@ const employeeRoutes = require('./employee/employeeRoutes');
 const requirementRoutes = require('./requirement/requirementRoutes');
 const recruitmentRoutes = require('./recruitment/recuitmentRoutes');
 const announcementRoutes = require('./announcement/announcementRoutes');
-const resignationRoutes = require('./resignation/resignationRoutes');
+const resignationRoutes = require('./resignation/routes/resignationRoutes');
+const exitClearanceRoutes = require('./resignation/routes/exitClearanceRoutes');
 const attendanceRoutes = require('./attendance/routes/attendaneRoutes');
 const timeTrackerRoutes = require('./timeTracker/timeTrackerRoutes');
 const attendanceRegularizationRoutes = require('./attendance/routes/attendanceRegularizationRoutes');
@@ -23,6 +24,7 @@ router.use('/requirements', requirementRoutes);
 router.use('/recruitments', recruitmentRoutes);
 router.use('/announcements', announcementRoutes);
 router.use('/resignations', resignationRoutes);
+router.use('/exit-clearance', exitClearanceRoutes);
 router.use('/time-tracker', timeTrackerRoutes);
 
 module.exports = router;
