@@ -1,6 +1,8 @@
-const requirementService = require('../service/requirementService');
+const requirementService = require("../service/requirementService");
 
+// Create Requirement
 const createRequirement = async (req, res) => {
+
     try {
 
         const {
@@ -22,10 +24,12 @@ const createRequirement = async (req, res) => {
             !jobDescription ||
             !priority
         ) {
+
             return res.status(400).json({
                 success: false,
-                message: "Required fields are missing"
+                message: "Requirement Code, Position, Department, Vacancies, Experience Required, Job Description and Priority are required."
             });
+
         }
 
         const data = await requirementService.createRequirement(req.body);
@@ -40,13 +44,17 @@ const createRequirement = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
+
 };
 
+
+// Get All Requirements
 const getAllRequirements = async (req, res) => {
+
     try {
 
         const data = await requirementService.getAllRequirements();
@@ -60,22 +68,28 @@ const getAllRequirements = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
+
 };
 
+
+// Get Requirement By Id
 const getRequirementById = async (req, res) => {
+
     try {
 
         const data = await requirementService.getRequirementById(req.params.id);
 
         if (!data) {
+
             return res.status(404).json({
                 success: false,
                 message: "Requirement not found"
             });
+
         }
 
         return res.status(200).json({
@@ -87,21 +101,26 @@ const getRequirementById = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
+
 };
 
+
+// Update Requirement
 const updateRequirement = async (req, res) => {
-    
+
     try {
 
-        if(Object.keys(req.body).length === 0) {
+        if (Object.keys(req.body).length === 0) {
+
             return res.status(400).json({
                 success: false,
-                message: 'Atleast one field is required'
+                message: "At least one field is required."
             });
+
         }
 
         const data = await requirementService.updateRequirement(
@@ -110,10 +129,12 @@ const updateRequirement = async (req, res) => {
         );
 
         if (!data) {
+
             return res.status(404).json({
                 success: false,
                 message: "Requirement not found"
             });
+
         }
 
         return res.status(200).json({
@@ -126,22 +147,28 @@ const updateRequirement = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
+
 };
 
+
+// Delete Requirement
 const deleteRequirement = async (req, res) => {
+
     try {
 
         const data = await requirementService.deleteRequirement(req.params.id);
 
         if (!data) {
+
             return res.status(404).json({
                 success: false,
                 message: "Requirement not found"
             });
+
         }
 
         return res.status(200).json({
@@ -153,11 +180,13 @@ const deleteRequirement = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
+
 };
+
 
 module.exports = {
     createRequirement,

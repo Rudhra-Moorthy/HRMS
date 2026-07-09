@@ -1,5 +1,6 @@
 const timeTrackerService = require('./timeTrackerService');
 
+// Create Time Entry
 const createTimeEntry = async (req, res) => {
 
     try {
@@ -20,7 +21,7 @@ const createTimeEntry = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Required fields are missing"
+                message: "Employee ID, Project Name, Task Name and Start Time are required."
             });
 
         }
@@ -37,13 +38,14 @@ const createTimeEntry = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
 
 };
 
+// Get All Time Entries
 const getAllTimeEntries = async (req, res) => {
 
     try {
@@ -59,13 +61,14 @@ const getAllTimeEntries = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
 
 };
 
+// Get Time Entry By Id
 const getTimeEntryById = async (req, res) => {
 
     try {
@@ -90,16 +93,26 @@ const getTimeEntryById = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
 
 };
 
+// Update Time Entry
 const updateTimeEntry = async (req, res) => {
 
     try {
+
+        if (Object.keys(req.body).length === 0) {
+
+            return res.status(400).json({
+                success: false,
+                message: "At least one field is required."
+            });
+
+        }
 
         const data = await timeTrackerService.updateTimeEntry(
             req.params.id,
@@ -125,13 +138,14 @@ const updateTimeEntry = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
 
 };
 
+// Delete Time Entry
 const deleteTimeEntry = async (req, res) => {
 
     try {
@@ -156,13 +170,14 @@ const deleteTimeEntry = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
 
 };
 
+// Get Employee Timesheet
 const getTimesheet = async (req, res) => {
 
     try {
@@ -180,7 +195,7 @@ const getTimesheet = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }

@@ -1,5 +1,4 @@
-
-const createAnnouncement = async (client,announcement) => {
+const createAnnouncement = async (client, announcement) => {
 
     const query = `
         INSERT INTO announcements
@@ -10,8 +9,17 @@ const createAnnouncement = async (client,announcement) => {
             message,
             created_by
         )
-        VALUES ($1,$2,$3,$4,$5)
-        RETURNING *;
+        VALUES
+        ($1,$2,$3,$4,$5)
+        RETURNING
+            id,
+            title,
+            category,
+            target_audience,
+            message,
+            created_by,
+            created_at,
+            updated_at;
     `;
 
     const values = [
@@ -25,32 +33,54 @@ const createAnnouncement = async (client,announcement) => {
     const result = await client.query(query, values);
 
     return result.rows[0];
+
 };
 
-const getAllAnnouncements = async (client) => {
+const getAllAnnouncements = async (pool) => {
 
     const query = `
-        SELECT *
+        SELECT
+            id,
+            title,
+            category,
+            target_audience,
+            message,
+            created_by,
+            created_at,
+            updated_at
         FROM announcements
-        ORDER BY created_at DESC
+        WHERE deleted_at IS NULL
+        ORDER BY created_at DESC;
     `;
 
-    const result = await client.query(query);
+    const result = await pool.query(query);
 
     return result.rows;
+
 };
 
-const getAnnouncementById = async (client, id) => {
+const getAnnouncementById = async (pool, id) => {
 
     const query = `
-        SELECT *
+        SELECT
+            id,
+            title,
+            category,
+            target_audience,
+            message,
+            created_by,
+            created_at,
+            updated_at
         FROM announcements
-        WHERE id=$1
+        WHERE
+            id=$1
+            AND deleted_at IS NULL;
     `;
 
-    const result = await client.query(query,[id]);
+    const result = await pool.query(query, [id]);
 
     return result.rows[0];
+
 };
 
 const updateAnnouncement = async (client, id, announcement) => {
@@ -58,13 +88,23 @@ const updateAnnouncement = async (client, id, announcement) => {
     const query = `
         UPDATE announcements
         SET
-            title=$1,
-            category=$2,
-            target_audience=$3,
-            message=$4,
-            updated_at=NOW()
-        WHERE id=$5
-        RETURNING *;
+            title = COALESCE($1, title),
+            category = COALESCE($2, category),
+            target_audience = COALESCE($3, target_audience),
+            message = COALESCE($4, message),
+            updated_at = NOW()
+        WHERE
+            id = $5
+            AND deleted_at IS NULL
+        RETURNING
+            id,
+            title,
+            category,
+            target_audience,
+            message,
+            created_by,
+            created_at,
+            updated_at;
     `;
 
     const values = [
@@ -78,21 +118,34 @@ const updateAnnouncement = async (client, id, announcement) => {
     const result = await client.query(query, values);
 
     return result.rows[0];
-};
 
-const deleteAnnouncement = async (client,id) => {
+};
+const deleteAnnouncement = async (client, id) => {
 
     const query = `
-        DELETE FROM announcements
-        WHERE id=$1
-        RETURNING *;
+        UPDATE announcements
+        SET
+            deleted_at = NOW(),
+            updated_at = NOW()
+        WHERE
+            id = $1
+            AND deleted_at IS NULL
+        RETURNING
+            id,
+            title,
+            category,
+            target_audience,
+            message,
+            created_by,
+            created_at,
+            updated_at;
     `;
 
-    const result = await client.query(query,[id]);
+    const result = await client.query(query, [id]);
 
     return result.rows[0];
-};
 
+};
 module.exports = {
     createAnnouncement,
     getAllAnnouncements,

@@ -1,5 +1,6 @@
-const candidateService = require('./candidateService');
+const candidateService = require("./candidateService");
 
+// Create Candidate
 const createCandidate = async (req, res) => {
 
     try {
@@ -11,25 +12,18 @@ const createCandidate = async (req, res) => {
             phoneNumber
         } = req.body;
 
-        if (
-            !requirementId ||
-            !fullName ||
-            !email ||
-            !phoneNumber
-        ) {
-
+        if (!requirementId || !fullName || !email || !phoneNumber) {
             return res.status(400).json({
                 success: false,
-                message: "Required fields are missing"
+                message: "Requirement ID, Full Name, Email, and Phone Number are required."
             });
-
         }
 
         const data = await candidateService.createCandidate(req.body);
 
         return res.status(201).json({
             success: true,
-            message: "Candidate created successfully",
+            message: "Candidate created successfully.",
             data
         });
 
@@ -37,13 +31,14 @@ const createCandidate = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal Server Error"
         });
 
     }
 
 };
 
+// Get All Candidates
 const getAllCandidates = async (req, res) => {
 
     try {
@@ -59,13 +54,14 @@ const getAllCandidates = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal Server Error"
         });
 
     }
 
 };
 
+// Get Candidate By Id
 const getCandidateById = async (req, res) => {
 
     try {
@@ -73,12 +69,10 @@ const getCandidateById = async (req, res) => {
         const data = await candidateService.getCandidateById(req.params.id);
 
         if (!data) {
-
             return res.status(404).json({
                 success: false,
-                message: "Candidate not found"
+                message: "Candidate not found."
             });
-
         }
 
         return res.status(200).json({
@@ -90,13 +84,14 @@ const getCandidateById = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal Server Error"
         });
 
     }
 
 };
 
+// Update Candidate
 const updateCandidate = async (req, res) => {
 
     try {
@@ -107,17 +102,15 @@ const updateCandidate = async (req, res) => {
         );
 
         if (!data) {
-
             return res.status(404).json({
                 success: false,
-                message: "Candidate not found"
+                message: "Candidate not found."
             });
-
         }
 
         return res.status(200).json({
             success: true,
-            message: "Candidate updated successfully",
+            message: "Candidate updated successfully.",
             data
         });
 
@@ -125,13 +118,14 @@ const updateCandidate = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal Server Error"
         });
 
     }
 
 };
 
+// Delete Candidate
 const deleteCandidate = async (req, res) => {
 
     try {
@@ -139,24 +133,22 @@ const deleteCandidate = async (req, res) => {
         const data = await candidateService.deleteCandidate(req.params.id);
 
         if (!data) {
-
             return res.status(404).json({
                 success: false,
-                message: "Candidate not found"
+                message: "Candidate not found."
             });
-
         }
 
         return res.status(200).json({
             success: true,
-            message: "Candidate deleted successfully"
+            message: "Candidate deleted successfully."
         });
 
     } catch (err) {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal Server Error"
         });
 
     }

@@ -1,8 +1,32 @@
-const interviewService = require('./interviewService');
+const interviewService = require("./interviewService");
 
+// Create Interview
 const createInterview = async (req, res) => {
 
     try {
+
+        const {
+            candidateId,
+            interviewerId,
+            interviewType,
+            interviewDate,
+            startTime
+        } = req.body;
+
+        if (
+            !candidateId ||
+            !interviewerId ||
+            !interviewType ||
+            !interviewDate ||
+            !startTime
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Candidate, Interviewer, Interview Type, Interview Date and Start Time are required."
+            });
+
+        }
 
         const data = await interviewService.createInterview(req.body);
 
@@ -16,7 +40,7 @@ const createInterview = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
@@ -24,6 +48,7 @@ const createInterview = async (req, res) => {
 };
 
 
+// Get All Interviews
 const getAllInterviews = async (req, res) => {
 
     try {
@@ -39,7 +64,7 @@ const getAllInterviews = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
@@ -47,6 +72,7 @@ const getAllInterviews = async (req, res) => {
 };
 
 
+// Get Interview By Id
 const getInterviewById = async (req, res) => {
 
     try {
@@ -71,7 +97,7 @@ const getInterviewById = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
@@ -79,11 +105,15 @@ const getInterviewById = async (req, res) => {
 };
 
 
+// Update Interview
 const updateInterview = async (req, res) => {
 
     try {
 
-        const data = await interviewService.updateInterview(req.params.id, req.body);
+        const data = await interviewService.updateInterview(
+            req.params.id,
+            req.body
+        );
 
         if (!data) {
 
@@ -104,7 +134,7 @@ const updateInterview = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
@@ -112,6 +142,7 @@ const updateInterview = async (req, res) => {
 };
 
 
+// Delete Interview
 const deleteInterview = async (req, res) => {
 
     try {
@@ -136,12 +167,13 @@ const deleteInterview = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: err.message
+            message: err.message || "Internal server error"
         });
 
     }
 
 };
+
 
 module.exports = {
     createInterview,

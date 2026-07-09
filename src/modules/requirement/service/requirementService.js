@@ -1,24 +1,25 @@
-const pool = require('../../../config/db');
-const requirementRepo = require('../repository/requirementRepository');
-const requirementDto = require('../dto/requirementDto');
+const pool = require("../../../config/db");
+const requirementRepo = require("../repository/requirementRepository");
+const requirementDto = require("../dto/requirementDto");
 
+// Create Requirement
 const createRequirement = async (body) => {
 
     const client = await pool.connect();
 
     try {
 
-        await client.query('BEGIN');
+        await client.query("BEGIN");
 
         const result = await requirementRepo.createRequirement(client, body);
 
-        await client.query('COMMIT');
+        await client.query("COMMIT");
 
         return requirementDto(result);
 
     } catch (err) {
 
-        await client.query('ROLLBACK');
+        await client.query("ROLLBACK");
         throw err;
 
     } finally {
@@ -29,50 +30,86 @@ const createRequirement = async (body) => {
 
 };
 
+
+// Get All Requirements
 const getAllRequirements = async () => {
+
+    const client = await pool.connect();
 
     try {
 
-        const requirements = await requirementRepo.getAllRequirements(pool);
+        const requirements = await requirementRepo.getRequirements(client);
+
         return requirements.map(requirementDto);
 
     } catch (err) {
+
         throw err;
+
+    } finally {
+
+        client.release();
 
     }
 
 };
 
+
+// Get Requirement By Id
 const getRequirementById = async (id) => {
+
+    const client = await pool.connect();
 
     try {
 
-        const requirement = await requirementRepo.getRequirementById(pool, id);
+        const requirement = await requirementRepo.getRequirement(client, id);
+
         return requirementDto(requirement);
 
     } catch (err) {
+
         throw err;
+
+    } finally {
+
+        client.release();
+
     }
 
 };
 
+
+// Update Requirement
 const updateRequirement = async (id, body) => {
 
     const client = await pool.connect();
 
     try {
 
-        await client.query('BEGIN');
+        await client.query("BEGIN");
 
-        const result = await requirementRepo.updateRequirement(client, id, body);
+        const requirement = await requirementRepo.getRequirement(client, id);
 
-        await client.query('COMMIT');
+        if (!requirement) {
+
+            await client.query("ROLLBACK");
+            return null;
+
+        }
+
+        const result = await requirementRepo.updateRequirement(
+            client,
+            id,
+            body
+        );
+
+        await client.query("COMMIT");
 
         return requirementDto(result);
 
     } catch (err) {
 
-        await client.query('ROLLBACK');
+        await client.query("ROLLBACK");
         throw err;
 
     } finally {
@@ -83,23 +120,34 @@ const updateRequirement = async (id, body) => {
 
 };
 
+
+// Delete Requirement
 const deleteRequirement = async (id) => {
 
     const client = await pool.connect();
 
     try {
 
-        await client.query('BEGIN');
+        await client.query("BEGIN");
+
+        const requirement = await requirementRepo.getRequirement(client, id);
+
+        if (!requirement) {
+
+            await client.query("ROLLBACK");
+            return null;
+
+        }
 
         const result = await requirementRepo.deleteRequirement(client, id);
 
-        await client.query('COMMIT');
+        await client.query("COMMIT");
 
-        return result;
+        return requirementDto(result);
 
     } catch (err) {
 
-        await client.query('ROLLBACK');
+        await client.query("ROLLBACK");
         throw err;
 
     } finally {
@@ -109,6 +157,7 @@ const deleteRequirement = async (id) => {
     }
 
 };
+
 
 module.exports = {
     createRequirement,
@@ -116,4 +165,4 @@ module.exports = {
     getRequirementById,
     updateRequirement,
     deleteRequirement
-};
+};  

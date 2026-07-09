@@ -6,14 +6,16 @@ const requirementDto = (requirement) => {
         id: requirement.id,
         requirementCode: requirement.requirement_code,
         position: requirement.position,
-        deptId: requirement.dept_id,    
+        departmentId: requirement.dept_id,
         vacancies: requirement.vacancies,
         experienceRequired: requirement.experience_required,
         jobDescription: requirement.job_description,
         priority: requirement.priority,
         status: requirement.status,
-        postedDate: requirement.created_at.toISOString().split('T')[0]
+        createdAt: requirement.created_at,
+        updatedAt: requirement.updated_at
     };
+
 };
 
 module.exports = requirementDto;
